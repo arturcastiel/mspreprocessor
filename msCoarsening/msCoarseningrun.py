@@ -1,0 +1,1 @@
+print('artur eh lindo')
