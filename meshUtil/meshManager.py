@@ -38,6 +38,7 @@ class MeshManager:
             "Source term", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
         self.all_volumes = self.mb.get_entities_by_dimension(0, self.dimension)
 
+        self.init_Center()
         self.init_Volume()
 
         self.all_nodes = self.mb.get_entities_by_dimension(0, 0)
@@ -164,6 +165,16 @@ class MeshManager:
         self.set_information(boundary_condition, physicals_values,
                              dim_target, set_connect=set_nodes)
 
+    def init_Center(self):
+        self.deftagHandle('CENTER',3)
+        centers = np.zeros((len(self.all_volumes),3)).astype('float')
+        index = 0
+        for volume in self.all_volumes:
+            centers[index] = self.get_centroid(volume)
+            index += 1
+        self.setData("CENTER",centers)
+
+
     def init_Volume(self):
         mat = np.zeros(self.all_volumes.size())
         index = 0
@@ -193,23 +204,30 @@ class MeshManager:
         coords = np.array([self.mb.get_coords([vert]) for vert in verts])
         qtd_pts = len(verts)
         if qtd_pts == 4:
+            pass
             vect_1 = coords[1] - coords[0]
             vect_2 = coords[2] - coords[0]
             vect_3 = coords[3] - coords[0]
             vol_eval = abs(np.dot(np.cross(vect_1, vect_2), vect_3)) / 6.0
         elif qtd_pts == 8:
-            #pdb.set_trace()
-            vect_1 = coords[7] - coords[0]
-            vect_2 = coords[1] - coords[0]
-            vect_3 = coords[3] - coords[5]
-            vect_4 = coords[4] - coords[6]
-            vect_5 = coords[5] - coords[0]
-            vect_6 = coords[2] - coords[0]
-            vect_7 = coords[6] - coords[3]
-            D1 = np.linalg.det(np.array([vect_1, vect_2, vect_3]))
-            D2 = np.linalg.det(np.array([vect_1, vect_4, vect_5]))
-            D3 = np.linalg.det(np.array([vect_1, vect_6, vect_7]))
-            vol_eval = ((D1+D2+D3)/2)
+            pass
+            #SEGUNDA ATIVIDADE PRA RENATINHA
+            #CALCULAR O VOLUME DO HEXAEDRO IERREGULAR DADO OS 8 PONTOS
+
+            # pass
+            # #pdb.set_trace()
+            # vect_1 = coords[7] - coords[0]
+            # vect_2 = coords[1] - coords[0]
+            # vect_3 = coords[3] - coords[5]
+            # vect_4 = coords[4] - coords[6]
+            # vect_5 = coords[5] - coords[0]
+            # vect_6 = coords[2] - coords[0]
+            # vect_7 = coords[6] - coords[3]
+            # D1 = np.linalg.det(np.array([vect_1, vect_2, vect_3]))
+            # D2 = np.linalg.det(np.array([vect_1, vect_4, vect_5]))
+            # D3 = np.linalg.det(np.array([vect_1, vect_6, vect_7]))
+            # vol_eval = ((D1+D2+D3)/2)
+            vol_eval = 1
             return vol_eval
         else:
             vol_eval  = 0
@@ -221,6 +239,18 @@ class MeshManager:
         vect_3 = tet_nodes[3] - tet_nodes[0]
         vol_eval = abs(np.dot(np.cross(vect_1, vect_2), vect_3))/1
         return vol_eval
+
+    def get_piram_volume(self,tet_nodes):
+        #PRIMEIRA ATIVIDADE PARA RENATINHA
+        # atividade para renata
+        #input: 5 handles para os 5 nós da piramide
+        #output: volume da piramide
+
+        #ler biblioteca do numpy para isso
+        #metodo get_tetravolume como base
+
+
+        pass
 
     @staticmethod
     def point_distance(coords_1, coords_2):
