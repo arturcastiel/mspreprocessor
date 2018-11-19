@@ -7,8 +7,7 @@ import pdb
 #%load_ext autoreload
 #%autoreload 2
 
-1+1
-1+3
+
 M1 = msh('8.msh')
 
 
