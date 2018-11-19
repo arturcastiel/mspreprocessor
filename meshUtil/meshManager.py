@@ -41,6 +41,7 @@ class MeshManager:
 
         self.all_nodes = self.mb.get_entities_by_dimension(0, 0)
         self.mtu.construct_aentities(self.all_nodes)
+
         self.all_faces = self.mb.get_entities_by_dimension(0, self.dimension-1)
         self.all_edges = self.mb.get_entities_by_dimension(0, self.dimension-2)
 
@@ -283,8 +284,12 @@ class MeshManager:
         pass
 
     def print(self, text = None):
+        ms = self.mb.create_meshset()
+        self.mb.add_entities(ms,self.all_faces)
+        self.mb.add_entities(ms, self.all_volumes)
         if text == None:
             text = "output.vtk"
+        self.mb.write_file(text,[ms])
         print(text)
 
     @staticmethod
