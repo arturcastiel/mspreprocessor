@@ -38,13 +38,15 @@ class MeshManager:
             "Source term", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
         self.all_volumes = self.mb.get_entities_by_dimension(0, self.dimension)
 
-        self.init_Center()
-        self.init_Volume()
 
         self.all_nodes = self.mb.get_entities_by_dimension(0, 0)
         self.mtu.construct_aentities(self.all_nodes)
         self.all_faces = self.mb.get_entities_by_dimension(0, self.dimension-1)
+        self.all_edges = self.mb.get_entities_by_dimension(0, self.dimension-2)
 
+        self.init_Center()
+        self.init_Volume()
+        self.init_Normal()
         self.dirichlet_faces = set()
         self.neumann_faces = set()
 
@@ -167,12 +169,42 @@ class MeshManager:
 
     def init_Center(self):
         self.deftagHandle('CENTER',3)
+        #centro dos volumes
         centers = np.zeros((len(self.all_volumes),3)).astype('float')
         index = 0
         for volume in self.all_volumes:
             centers[index] = self.get_centroid(volume)
             index += 1
         self.setData("CENTER",centers)
+        #centro das faces
+        centers = np.zeros((len(self.all_faces), 3)).astype('float')
+        index = 0
+        for face in self.all_faces:
+            centers[index] = self.get_centroid(face)
+            index += 1
+        self.setData("CENTER", centers, rangeEl = self.all_faces)
+
+        #centro das arestas
+        centers = np.zeros((len(self.all_edges), 3)).astype('float')
+        index = 0
+        for edge in self.all_edges:
+            centers[index] = self.get_centroid(edge)
+            index += 1
+        self.setData("CENTER", centers, rangeEl = self.all_edges)
+
+    def init_Normal(self):
+        self.deftagHandle('NORMAL', 3)
+        normal = np.zeros((len(self.all_faces), 3)).astype('float')
+        index = 0
+        for face in self.all_faces:
+            verts = self.mb.get_connectivity(face)
+            coords = np.array([self.mb.get_coords([vert]) for vert in verts])
+            vec1 = coords[1] - coords[0]
+            vec2 = coords[2] - coords[0]
+            cross = np.cross(vec1,vec2)
+            normal[index] = cross/np.linalg.norm(cross)
+            index += 1
+        self.setData("NORMAL", normal, rangeEl=self.all_faces)
 
 
     def init_Volume(self):
@@ -248,9 +280,12 @@ class MeshManager:
 
         #ler biblioteca do numpy para isso
         #metodo get_tetravolume como base
-
-
         pass
+
+    def print(self, text = None):
+        if text == None:
+            text = "output.vtk"
+        print(text)
 
     @staticmethod
     def point_distance(coords_1, coords_2):
