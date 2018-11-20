@@ -4,7 +4,7 @@ from pymoab import core, types, rng, topo_util
 from pymoab import skinner as sk
 
 from meshUtil.meshManager import MeshManager as msh
-
+from msCoarsening import msCoarsening as eng
 import numpy as np
 
 import pdb
@@ -29,5 +29,8 @@ vec3 = np.array([1,3,4,2,5,2],dtype = 'uint')
 rangeMod = M1.rangeIndex(vec2)
 
 data = np.roll(vec2,3)
+
+eng.msCoarsening()
+
 
 M1.print()
