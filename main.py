@@ -29,6 +29,8 @@ vec3 = np.array([1,3,4,2,5,2],dtype = 'uint')
 rangeMod = M1.rangeIndex(vec2)
 
 data = np.roll(vec2,3)
+
+
 a = eng.msCoarsening(1)
 
 M1.print()

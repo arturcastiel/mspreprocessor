@@ -1,7 +1,7 @@
 print('msCoarsening eoutines inicializado com sucesso')
 from configparser import ConfigParser
 
-class msCoarsening:
+class MsCoarsening:
     def __init__(self,fineMsh):
 
         parser = ConfigParser()
