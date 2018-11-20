@@ -2,5 +2,8 @@
 
 print('Inicializando Engrocador de Malha')
 
-__all__ = ["test"]
+__all__ = ["readConfig","algoritmo"]
 #import meshManager
+
+print(__name__)
+")
