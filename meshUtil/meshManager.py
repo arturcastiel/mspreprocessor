@@ -296,7 +296,8 @@ class MeshManager:
         self.mb.add_entities(ms, self.all_volumes)
         if text == None:
             text = "output.vtk"
-        self.mb.write_file(text,[ms])
+        #self.mb.write_file(text,[ms])
+        self.mb.write_file(text)
         print(text)
 
     @staticmethod
