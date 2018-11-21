@@ -1,8 +1,10 @@
 
 import time
 import pdb
-
+import configparser as cp
 from . finescaleMesh import FineScaleMesh
+import msCoarseningLib.algoritmo
+#from msCoarseningLib.configManager import readConfig
 
 import numpy as np
 from math import pi, sqrt
@@ -15,6 +17,7 @@ class FineScaleMeshMS(FineScaleMesh):
         print(mesh_file + 'entrou')
         super().__init__(mesh_file,dim)
         self.macroDim()
+        self.initPartition()
         # self.dimension = dim
         # self.mb = core.Core()
         # self.root_set = self.mb.get_root_set()
@@ -51,11 +54,33 @@ class FineScaleMeshMS(FineScaleMesh):
         # self.macroDim()
         # self.dirichlet_faces = set()
         # self.neumann_faces = set()
+    def initPartition(self):
+        config = self.readConfig()
+
+        particionadorType = config.get("Particionador","algoritmo")
+        print(particionadorType)
+        key = "Coarsening_" + particionadorType + "_Input"
+        nx = int((config.get(key,'nx')))
+        ny = int((config.get(key,'ny')))
+        nz = int((config.get(key,'nz')))
+        partTag = msCoarseningLib.algoritmo.scheme1(self.readData("CENTER"),len(self.all_volumes), self.rx, self.ry, self.rz,
+                                          nx, ny, nz)
+        self.deftagHandle("PARTITION", 1, dataText="int")
+        self.setData("PARTITION",partTag)
+
+
+
+
+        pass
     def macroDim(self):
         coords = self.mb.get_coords(self.all_nodes).reshape(len(self.all_nodes),3)
         self.rx = (coords[:,0].min(), coords[:,0].max())
         self.ry = (coords[:,1].min(), coords[:,1].max())
         self.rz = (coords[:,2].min(), coords[:,2].max())
 
+    def readConfig(self,configInput="msCoarse.ini"):
+        configFile = cp.ConfigParser()
+        configFile.read(configInput)
+        return configFile
 
 #--------------Início dos parâmetros de entrada-------------------

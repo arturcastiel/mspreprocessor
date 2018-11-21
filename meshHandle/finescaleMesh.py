@@ -312,7 +312,7 @@ class FineScaleMesh:
         self.mb.write_file(text1,[m1])
         self.mb.write_file(text2,[m2])
         self.mb.write_file(text3,[m3])
-        print(text)
+
 
     @staticmethod
     def point_distance(coords_1, coords_2):
