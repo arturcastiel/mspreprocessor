@@ -21,7 +21,7 @@ class MeshManager:
         self.handleDic['MATERIAL_SET'] = self.physical_tag
         """
         #
-        #self.tagDic['MATERIAL_SET'] = self.physical_tag    
+        #self.tagDic['MATERIAL_SET'] = self.physical_tag
         """
         self.physical_sets = self.mb.get_entities_by_type_and_tag(
             0, types.MBENTITYSET, np.array(
@@ -48,11 +48,18 @@ class MeshManager:
         self.init_Center()
         self.init_Volume()
         self.init_Normal()
+        self.macroDim()
         self.dirichlet_faces = set()
         self.neumann_faces = set()
 
         '''self.GLOBAL_ID_tag = self.mb.tag_get_handle(
             "Global_ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, True)'''
+    def macroDim(self):
+        coords = self.mb.get_coords(self.all_nodes).reshape(len(self.all_nodes),3)
+        self.dx = (coords[:,0].min(), coords[:,0].max())
+        self.dy = (coords[:,1].min(), coords[:,1].max())
+        self.dz = (coords[:,2].min(), coords[:,2].max())
+
     def deftagHandle(self,nameTag,dataSize, dataText = "float", dataDensity = types.MB_TAG_DENSE ):
          if dataText == 'float':
              dataType = types.MB_TYPE_DOUBLE

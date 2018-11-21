@@ -2,11 +2,12 @@ import numpy as np
 from math import pi, sqrt
 from pymoab import core, types, rng, topo_util
 from pymoab import skinner as sk
-import msCoarseningLib
+import msCoarseningLib.readConfig
 from meshUtil.meshManager import MeshManager as msh
 import numpy as np
 from msCoarseningLib import readConfig as ai
 import pdb
+import msCoarseningLib.algoritmo
 #%load_ext autoreload
 #%autoreload 2
 
@@ -25,6 +26,7 @@ data = np.roll(vec2,3)
 op = ai.readConfig()
 
 
+msCoarseningLib.algoritmo.scheme1(M1)
 
 
 
