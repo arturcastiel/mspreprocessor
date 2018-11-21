@@ -4,6 +4,9 @@ from pymoab import core, types, rng, topo_util
 from pymoab import skinner as sk
 import msCoarseningLib.readConfig
 from meshUtil.meshManager import MeshManager as msh
+from meshHandle.finescaleMesh import FineScaleMesh as msh2
+from meshHandle.multiscaleMesh import FineScaleMeshMS as msh3
+
 import numpy as np
 from msCoarseningLib import readConfig as ai
 import pdb
@@ -12,9 +15,9 @@ import msCoarseningLib.algoritmo
 #%load_ext autoreload
 #%autoreload 2
 
-M1 = msh('semi.msh')
-
-
+M1 = msh('8.msh')
+M2 = msh2("8.msh")
+M3 = msh3("8.msh")
 vec = np.arange(len(M1.all_volumes)).astype(int)
 tf = np.array([True, False])
 a = np.random.choice(tf, int(2311))
