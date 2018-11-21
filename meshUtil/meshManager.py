@@ -56,9 +56,9 @@ class MeshManager:
             "Global_ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, True)'''
     def macroDim(self):
         coords = self.mb.get_coords(self.all_nodes).reshape(len(self.all_nodes),3)
-        self.dx = (coords[:,0].min(), coords[:,0].max())
-        self.dy = (coords[:,1].min(), coords[:,1].max())
-        self.dz = (coords[:,2].min(), coords[:,2].max())
+        self.rx = (coords[:,0].min(), coords[:,0].max())
+        self.ry = (coords[:,1].min(), coords[:,1].max())
+        self.rz = (coords[:,2].min(), coords[:,2].max())
 
     def deftagHandle(self,nameTag,dataSize, dataText = "float", dataDensity = types.MB_TAG_DENSE ):
          if dataText == 'float':

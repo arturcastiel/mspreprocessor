@@ -1,14 +1,17 @@
 
 import pdb
-from . import readConfig
-
-def scheme1(msh):
+import numpy as np
+def scheme1(msh,nx = 3, ny = 3, nz =3 ):
     # msh -> objeto da clase meshUtil
     centerCoord = msh.readData("CENTER")
+    box = np.array([0,(msh.rx[1] -  msh.rx[0])/nx,
+        0,(msh.ry[1] -  msh.ry[0])/ny, 0,(msh.rz[1] -  msh.rx[0])/nz]).reshape(3,2)
+
+    cent_coord_El1 = box.sum(axis =1)/2
+
+
     print(centerCoord)
     pdb.set_trace()
-
-    op  = readConfig.readConfig()
     checkinBox(centerCoord)
 
 
