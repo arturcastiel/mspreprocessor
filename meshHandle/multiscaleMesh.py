@@ -14,6 +14,7 @@ class FineScaleMeshMS(FineScaleMesh):
     def __init__(self,mesh_file, dim=3):
         print(mesh_file + 'entrou')
         super().__init__(mesh_file,dim)
+        self.macroDim()
         # self.dimension = dim
         # self.mb = core.Core()
         # self.root_set = self.mb.get_root_set()

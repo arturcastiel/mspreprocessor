@@ -15,29 +15,31 @@ import msCoarseningLib.algoritmo
 #%load_ext autoreload
 #%autoreload 2
 
-M1 = msh('8.msh')
-M2 = msh2("8.msh")
+#M1 = msh('8.msh')
+#M2 = msh2("8.msh")
 M3 = msh3("8.msh")
-vec = np.arange(len(M1.all_volumes)).astype(int)
+vec = np.arange(len(M3.all_volumes)).astype(int)
 tf = np.array([True, False])
 a = np.random.choice(tf, int(2311))
 
 vec2 = vec[1:30]
 vec3 = np.array([1,3,4,2,5,2],dtype = 'uint')
 
-rangeMod = M1.rangeIndex(vec2)
+#rangeMod = M1.rangeIndex(vec2)
 data = np.roll(vec2,3)
-op = ai.readConfig()
+#op = ai.readConfig()
 
 
-lep = msCoarseningLib.algoritmo.scheme1(M1)
+point = np.arange(len(M3.all_nodes)).astype("int")
 
-M1.deftagHandle("PARTITION",1, dataText="int")
+lep = msCoarseningLib.algoritmo.scheme1(M3)
 
-
-
-
-M1.setData("PARTITION",lep)
+M3.deftagHandle("PARTITION",1, dataText="int")
+M3.setData("PARTITION",lep)
 
 
-M1.print()
+M3.deftagHandle("PUAN",1, dataText="int")
+M3.setData("PUAN",point, rangeEl = M3.all_nodes )
+
+
+M3.print()

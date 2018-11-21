@@ -48,17 +48,12 @@ class FineScaleMesh:
         self.init_Center()
         self.init_Volume()
         self.init_Normal()
-        self.macroDim()
+
         self.dirichlet_faces = set()
         self.neumann_faces = set()
 
         '''self.GLOBAL_ID_tag = self.mb.tag_get_handle(
             "Global_ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, True)'''
-    def macroDim(self):
-        coords = self.mb.get_coords(self.all_nodes).reshape(len(self.all_nodes),3)
-        self.rx = (coords[:,0].min(), coords[:,0].max())
-        self.ry = (coords[:,1].min(), coords[:,1].max())
-        self.rz = (coords[:,2].min(), coords[:,2].max())
 
     def deftagHandle(self,nameTag,dataSize, dataText = "float", dataDensity = types.MB_TAG_DENSE ):
          if dataText == 'float':
@@ -291,13 +286,32 @@ class FineScaleMesh:
         pass
 
     def print(self, text = None):
-        ms = self.mb.create_meshset()
-        self.mb.add_entities(ms,self.all_faces)
-        self.mb.add_entities(ms, self.all_volumes)
+
+        m1 = self.mb.create_meshset()
+        self.mb.add_entities(m1, self.all_nodes)
+
+        m2 = self.mb.create_meshset()
+        self.mb.add_entities(m2,self.all_faces)
+
+        m3 = self.mb.create_meshset()
+        self.mb.add_entities(m3, self.all_volumes)
+
+
+        #self.mb.add_entities(ms,self.all_faces)
+        #self.mb.add_entities(ms, self.all_volumes)
+
         if text == None:
-            text = "output.vtk"
+            text = "output"
+            extension = ".vtk"
+        text1 = text + "-nodes" + extension
+        text2 = text + "-face" + extension
+        text3 = text + "-volume" + extension
+
         #self.mb.write_file(text,[ms])
-        self.mb.write_file(text)
+        #self.mb.write_file(text, [ms])
+        self.mb.write_file(text1,[m1])
+        self.mb.write_file(text2,[m2])
+        self.mb.write_file(text3,[m3])
         print(text)
 
     @staticmethod
