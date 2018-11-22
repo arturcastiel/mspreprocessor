@@ -1,7 +1,7 @@
 
 
 import numpy as np
-
+import pdb
 
 
 #para definir funções de particionamento deve-se atentar as saidas
@@ -13,14 +13,26 @@ import numpy as np
 # continuos contando de 0 ao N de volumes coarse, a função tb remover os centros indesejados
 
 
+
+#para adicionar novos esquemas basta criar um esquema com numeracao sequencial
+#ex. scheme2  , mais shceme3
+#a seção campo de leitura do arquivo msCoarse.ini deverá ter nome correspondente
+#ex [Coarsening_2_Input] e [Coarsening_3_Input]
+#todos atributos serao passados para funcao correspondente na ordem definida
+#por default a leitura dos elementos é float, caso necessário. converta para int
+#ex int(nx)
+
 def scheme1(centerCoord, num_of_vol, rx,ry,rz ,nx = 3, ny = 3, nz =3 ):
     #input : centerCoord - > array with the center of elements
     #        num_of_vol = number of volumes
+
     #        rx,ry,rz - (min, max) values of x,y,z of the phyisical domain
     #        nx, ny, nz
     # msh -> objeto da clase meshUtil
     #centerCoord = msh.readData("CENTER")
-
+    nx = int(nx)
+    ny = int(ny)
+    nz = int(nz)
     box = np.array([0, (rx[1] - rx[0])/nx, 0,(ry[1] - ry[0]) /ny, 0,(rz[1] - rz[0])/(nz+0)]).reshape(3,2)
     cent_coord_El1 = box.sum(axis =1)/2
     tag = np.zeros(num_of_vol).astype("int")
@@ -38,7 +50,6 @@ def scheme1(centerCoord, num_of_vol, rx,ry,rz ,nx = 3, ny = 3, nz =3 ):
                 point = checkinBox(centerCoord,x=(boxMin[0], boxMax[0]), y=(boxMin[1], boxMax[1]) , z=(boxMin[2], boxMax[2]))
                 tag[point] = index
                 index += 1
-    print(coarseCenters)
     return tagAdjust(tag,coarseCenters)
 
 
@@ -56,12 +67,14 @@ def checkinBox(coords, x = (1,2), y = (2,3), z = (3,4)):
 #e remover as respectivas coordenadas do centro dos volumes das malhas primais
 def tagAdjust(tag, coarseCenter):
     # msh -> objeto da clase meshUtil
-    fineTag = np.zeros(len(tag))
+    fineTag =  tag
     elementsOriginal = [*set(tag)]
     elementsNovo = [*set(range(len(elementsOriginal)))]
     elementsMissing = set(range(len(coarseCenter))) - set(elementsOriginal)
     for elo, eln in zip(elementsOriginal,elementsNovo):
         if elo != eln:
+            print((elo,eln))
             pointer = (tag == elo)
             fineTag[pointer] = eln
+    print(fineTag)
     return fineTag.astype(int) , np.delete(coarseCenter, [*elementsMissing], axis = 0)

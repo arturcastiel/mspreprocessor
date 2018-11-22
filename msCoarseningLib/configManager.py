@@ -2,8 +2,14 @@ import configparser as cp
 import pdb
 
 def readConfig(configInput = "msCoarse.ini"):
+
+
+    configInput = 'lololita'
     configFile = cp.ConfigParser()
-    configFile.read(configInput)
+    try:
+        configFile.read(configInput)
+    except:
+        print("Não foi possivel ler o arquivo: "+configInput)
     return configFile
 
 

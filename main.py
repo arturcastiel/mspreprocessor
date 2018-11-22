@@ -39,9 +39,4 @@ point = np.arange(len(M3.all_nodes)).astype("int")
 # M3.deftagHandle("PARTITION",1, dataText="int")
 # M3.setData("PARTITION",lep)
 
-
-M3.deftagHandle("PUAN",1, dataText="int")
-M3.setData("PUAN",point, rangeEl = M3.all_nodes )
-
-
 M3.print()
