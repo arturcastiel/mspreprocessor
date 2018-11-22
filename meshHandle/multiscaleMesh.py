@@ -65,8 +65,9 @@ class FineScaleMeshMS(FineScaleMesh):
         nz = int((config.get(key,'nz')))
         partTag = msCoarseningLib.algoritmo.scheme1(self.readData("CENTER"),len(self.all_volumes), self.rx, self.ry, self.rz,
                                           nx, ny, nz)
+
         self.deftagHandle("PARTITION", 1, dataText="int")
-        self.setData("PARTITION",partTag)
+        self.setData("PARTITION",partTag[0])
 
 
 
