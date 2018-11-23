@@ -4,99 +4,57 @@ import pdb
 import numpy as np
 from math import pi, sqrt
 from pymoab import core, types, rng, topo_util
+from . corePymoab import CoreMoab
+
 print('STANDARD FINESCALE MESH - NO MULTISCALE')
 class FineScaleMesh:
     def __init__(self,mesh_file, dim=3):
-        self.dimension = dim
-        self.mb = core.Core()
-        self.root_set = self.mb.get_root_set()
-        self.mtu = topo_util.MeshTopoUtil(self.mb)
-        self.mb.load_file(mesh_file)
-
-        # self.tagDic- dicionário de tag
-        # input: string do tag
-        # output: pymoab Tag
-        self.handleDic = {}
-        self.physical_tag = self.mb.tag_get_handle("MATERIAL_SET")
-        self.handleDic['MATERIAL_SET'] = self.physical_tag
-        """
+        # self.dimension = dim
+        # self.mb = core.Core()
+        # self.root_set = self.mb.get_root_set()
+        # self.mtu = topo_util.MeshTopoUtil(self.mb)
+        # self.mb.load_file(mesh_file)
+        # # self.tagDic- dicionário de tag
+        # # input: string do tag
+        # # output: pymoab Tag
+        # self.handleDic = {}
+        # self.physical_tag = self.mb.tag_get_handle("MATERIAL_SET")
+        # self.handleDic['MATERIAL_SET'] = self.physical_tag
+        # """
+        # #
+        # #self.tagDic['MATERIAL_SET'] = self.physical_tag
+        # """
+        # self.physical_sets = self.mb.get_entities_by_type_and_tag(
+        #     0, types.MBENTITYSET, np.array(
+        #     (self.physical_tag,)), np.array((None,)))
         #
-        #self.tagDic['MATERIAL_SET'] = self.physical_tag
-        """
-        self.physical_sets = self.mb.get_entities_by_type_and_tag(
-            0, types.MBENTITYSET, np.array(
-            (self.physical_tag,)), np.array((None,)))
-
-        #print(self.physical_sets)
-        self.dirichlet_tag = self.mb.tag_get_handle(
-            "Dirichlet", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
-        self.neumann_tag = self.mb.tag_get_handle(
-            "Neumann", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
-        self.perm_tag = self.mb.tag_get_handle(
-            "Permeability", 9, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
-        self.source_tag = self.mb.tag_get_handle(
-            "Source term", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
-        self.all_volumes = self.mb.get_entities_by_dimension(0, self.dimension)
+        # #print(self.physical_sets)
+        # self.dirichlet_tag = self.mb.tag_get_handle(
+        #     "Dirichlet", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
+        # self.neumann_tag = self.mb.tag_get_handle(
+        #     "Neumann", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
+        # self.perm_tag = self.mb.tag_get_handle(
+        #     "Permeability", 9, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
+        # self.source_tag = self.mb.tag_get_handle(
+        #     "Source term", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
+        # self.all_volumes = self.mb.get_entities_by_dimension(0, self.dimension)
 
 
-        self.all_nodes = self.mb.get_entities_by_dimension(0, 0)
-        self.mtu.construct_aentities(self.all_nodes)
-
-        self.all_faces = self.mb.get_entities_by_dimension(0, self.dimension-1)
-        self.all_edges = self.mb.get_entities_by_dimension(0, self.dimension-2)
-
+        # self.all_nodes = self.mb.get_entities_by_dimension(0, 0)
+        # self.mtu.construct_aentities(self.all_nodes)
+        #
+        # self.all_faces = self.mb.get_entities_by_dimension(0, self.dimension-1)
+        # self.all_edges = self.mb.get_entities_by_dimension(0, self.dimension-2)
+        self.core = CoreMoab(mesh_file)
         self.init_Center()
         self.init_Volume()
         self.init_Normal()
-
         self.dirichlet_faces = set()
         self.neumann_faces = set()
 
         '''self.GLOBAL_ID_tag = self.mb.tag_get_handle(
             "Global_ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, True)'''
 
-    def deftagHandle(self,nameTag,dataSize, dataText = "float", dataDensity = types.MB_TAG_DENSE ):
-         if dataText == 'float':
-             dataType = types.MB_TYPE_DOUBLE
-         elif dataText == "int":
-             dataType = types.MB_TYPE_INTEGER
-         elif dataText == "bool":
-             dataType == types.MB_TYPE_BIT
-         try:
-             handle = self.handleDic[nameTag]
-         except KeyError:
-             handle = self.mb.tag_get_handle(nameTag, dataSize, dataType, dataDensity, True)
-             self.handleDic[nameTag] = handle
-
-    def readData(self, nametag, indexVec = np.array([]), rangeEl = None):
-         if rangeEl == None:
-             rangeEl = self.all_volumes
-         if indexVec.size > 0:
-             rangeEl = self.rangeIndex(indexVec,rangeEl)
-         try:
-            handleTag = self.handleDic[nametag]
-            return self.mb.tag_get_data(handleTag, rangeEl)
-         except KeyError:
-             print("Tag não encontrado")
-
-    def rangeIndex(self, vecIndex, rangeHandle = None):
-        if rangeHandle == None:
-             rangeHandle = self.all_volumes
-        if vecIndex.dtype == "bool":
-            vec = np.where(vecIndex)[0]
-        else:
-            vec = vecIndex.astype("uint")
-        handles = np.asarray(rangeHandle)[vec.astype("uint")].astype("uint")
-        return rng.Range(handles)
-
-
-    def setData(self, nametag,data, indexVec = np.array([]), rangeEl = None):
-         if rangeEl == None:
-             rangeEl = self.all_volumes
-         if indexVec.size > 0:
-             rangeEl = self.rangeIndex(indexVec,rangeEl)
-         handleTag = self.handleDic[nametag]
-         self.mb.tag_set_data(handleTag,rangeEl,data)
 
     def create_vertices(self, coords):
         new_vertices = self.mb.create_vertices(coords)
@@ -171,61 +129,61 @@ class FineScaleMesh:
                              dim_target, set_connect=set_nodes)
 
     def init_Center(self):
-        self.deftagHandle('CENTER',3)
+        self.core.deftagHandle('CENTER',3)
         #centro dos volumes
-        centers = np.zeros((len(self.all_volumes),3)).astype('float')
+        centers = np.zeros((len(self.core.all_volumes),3)).astype('float')
         index = 0
-        for volume in self.all_volumes:
+        for volume in self.core.all_volumes:
             centers[index] = self.get_centroid(volume)
             index += 1
-        self.setData("CENTER",centers)
+        self.core.setData("CENTER",centers)
         #centro das faces
-        centers = np.zeros((len(self.all_faces), 3)).astype('float')
+        centers = np.zeros((len(self.core.all_faces), 3)).astype('float')
         index = 0
-        for face in self.all_faces:
+        for face in self.core.all_faces:
             centers[index] = self.get_centroid(face)
             index += 1
-        self.setData("CENTER", centers, rangeEl = self.all_faces)
+        self.core.setData("CENTER", centers, rangeEl = self.core.all_faces)
 
         #centro das arestas
-        centers = np.zeros((len(self.all_edges), 3)).astype('float')
+        centers = np.zeros((len(self.core.all_edges), 3)).astype('float')
         index = 0
-        for edge in self.all_edges:
+        for edge in self.core.all_edges:
             centers[index] = self.get_centroid(edge)
             index += 1
-        self.setData("CENTER", centers, rangeEl = self.all_edges)
+        self.core.setData("CENTER", centers, rangeEl = self.core.all_edges)
 
     def init_Normal(self):
-        self.deftagHandle('NORMAL', 3)
-        normal = np.zeros((len(self.all_faces), 3)).astype('float')
+        self.core.deftagHandle('NORMAL', 3)
+        normal = np.zeros((len(self.core.all_faces), 3)).astype('float')
         index = 0
-        for face in self.all_faces:
-            verts = self.mb.get_connectivity(face)
-            coords = np.array([self.mb.get_coords([vert]) for vert in verts])
+        for face in self.core.all_faces:
+            verts = self.core.mb.get_connectivity(face)
+            coords = np.array([self.core.mb.get_coords([vert]) for vert in verts])
             vec1 = coords[1] - coords[0]
             vec2 = coords[2] - coords[0]
             cross = np.cross(vec1,vec2)
             normal[index] = cross/np.linalg.norm(cross)
             index += 1
-        self.setData("NORMAL", normal, rangeEl=self.all_faces)
+        self.core.setData("NORMAL", normal, rangeEl=self.core.all_faces)
 
 
     def init_Volume(self):
-        mat = np.zeros(self.all_volumes.size())
+        mat = np.zeros(self.core.all_volumes.size())
         index = 0
-        for vol in  self.all_volumes:
+        for vol in  self.core.all_volumes:
             mat[index] = self.get_volume(vol)
             index += 1
-        self.deftagHandle("VOLUME",1)
+        self.core.deftagHandle("VOLUME",1)
         #pdb.set_trace()
-        self.setData("VOLUME",mat)
+        self.core.setData("VOLUME",mat)
         #volTag = self.mb.tag_get_handle("VOLUME", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_DENSE, True)
         #self.mb.tag_set_data(volTag, self.all_volumes, mat)
         #return volTag
 
     def get_centroid(self, entity):
-        verts = self.mb.get_connectivity(entity)
-        coords = np.array([self.mb.get_coords([vert]) for vert in verts])
+        verts = self.core.mb.get_connectivity(entity)
+        coords = np.array([self.core.mb.get_coords([vert]) for vert in verts])
         qtd_pts = len(verts)
         #print qtd_pts, 'qtd_pts'
         coords = np.reshape(coords, (qtd_pts, 3))
@@ -235,8 +193,8 @@ class FineScaleMesh:
     def get_volume(self,entity):
         #input: entity tag
         #ouput: volume of a entity
-        verts = self.mb.get_connectivity(entity)
-        coords = np.array([self.mb.get_coords([vert]) for vert in verts])
+        verts = self.core.mb.get_connectivity(entity)
+        coords = np.array([self.core.mb.get_coords([vert]) for vert in verts])
         qtd_pts = len(verts)
         if qtd_pts == 4:
             pass
@@ -286,7 +244,6 @@ class FineScaleMesh:
         pass
 
     def print(self, text = None):
-
         m1 = self.mb.create_meshset()
         self.mb.add_entities(m1, self.all_nodes)
 
@@ -297,18 +254,14 @@ class FineScaleMesh:
         self.mb.add_entities(m3, self.all_volumes)
 
 
-        #self.mb.add_entities(ms,self.all_faces)
         #self.mb.add_entities(ms, self.all_volumes)
 
         if text == None:
             text = "output"
-            extension = ".vtk"
+        extension = ".vtk"
         text1 = text + "-nodes" + extension
         text2 = text + "-face" + extension
         text3 = text + "-volume" + extension
-
-        #self.mb.write_file(text,[ms])
-        #self.mb.write_file(text, [ms])
         self.mb.write_file(text1,[m1])
         self.mb.write_file(text2,[m2])
         self.mb.write_file(text3,[m3])

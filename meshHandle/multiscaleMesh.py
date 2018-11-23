@@ -14,7 +14,6 @@ from pymoab import core, types, rng, topo_util
 print('FINESCALE WITH MULTISCALE')
 class FineScaleMeshMS(FineScaleMesh):
     def __init__(self,mesh_file, dim=3):
-        print(mesh_file + 'entrou')
         super().__init__(mesh_file,dim)
         self.macroDim()
         self.initPartition()
@@ -55,34 +54,26 @@ class FineScaleMeshMS(FineScaleMesh):
         # self.dirichlet_faces = set()
         # self.neumann_faces = set()
     def initPartition(self):
+        print("initPartition")
         config = self.readConfig()
         particionadorType = config.get("Particionador","algoritmo")
         print(particionadorType)
         if particionadorType != '0':
-
             nameFunction = "scheme" + particionadorType
-
             key = "Coarsening_" + particionadorType + "_Input"
-            pdb.set_trace()
-            # nx = int((config.get(key, 'nx')))
-            # ny = int((config.get(key, 'ny')))
-            # nz = int((config.get(key, 'nz')))
-           # partTag = msCoarseningLib.algoritmo.scheme1(self.readData("CENTER"),len(self.all_volumes), self.rx, self.ry, self.rz,
-            #                              nx, ny, nz)
             specificAttributes = config.items(key)
             usedAttributes = []
             for at in specificAttributes:
                 usedAttributes.append(float(at[1]))
-            partTag = getattr(msCoarseningLib.algoritmo, nameFunction)(self.readData("CENTER"),len(self.all_volumes), self.rx, self.ry, self.rz,
-                                                             *usedAttributes)
-            pdb.set_trace()
-
-            self.deftagHandle("PARTITION", 1, dataText="int")
-            self.setData("PARTITION",partTag[0])
+            partTag = getattr(msCoarseningLib.algoritmo, nameFunction)(self.core.readData("CENTER"),
+                            len(self.core.all_volumes), self.rx, self.ry, self.rz,*usedAttributes)
+            self.core.deftagHandle("PARTITION", 1, dataText="int")
+            self.core.setData("PARTITION",partTag[0])
 
 
     def macroDim(self):
-        coords = self.mb.get_coords(self.all_nodes).reshape(len(self.all_nodes),3)
+        print("macroDim")
+        coords = self.core.mb.get_coords(self.core.all_nodes).reshape(len(self.core.all_nodes),3)
         self.rx = (coords[:,0].min(), coords[:,0].max())
         self.ry = (coords[:,1].min(), coords[:,1].max())
         self.rz = (coords[:,2].min(), coords[:,2].max())
