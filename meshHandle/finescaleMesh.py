@@ -9,42 +9,7 @@ from . corePymoab import CoreMoab
 print('STANDARD FINESCALE MESH - NO MULTISCALE')
 class FineScaleMesh:
     def __init__(self,mesh_file, dim=3):
-        # self.dimension = dim
-        # self.mb = core.Core()
-        # self.root_set = self.mb.get_root_set()
-        # self.mtu = topo_util.MeshTopoUtil(self.mb)
-        # self.mb.load_file(mesh_file)
-        # # self.tagDic- dicionário de tag
-        # # input: string do tag
-        # # output: pymoab Tag
-        # self.handleDic = {}
-        # self.physical_tag = self.mb.tag_get_handle("MATERIAL_SET")
-        # self.handleDic['MATERIAL_SET'] = self.physical_tag
-        # """
-        # #
-        # #self.tagDic['MATERIAL_SET'] = self.physical_tag
-        # """
-        # self.physical_sets = self.mb.get_entities_by_type_and_tag(
-        #     0, types.MBENTITYSET, np.array(
-        #     (self.physical_tag,)), np.array((None,)))
-        #
-        # #print(self.physical_sets)
-        # self.dirichlet_tag = self.mb.tag_get_handle(
-        #     "Dirichlet", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
-        # self.neumann_tag = self.mb.tag_get_handle(
-        #     "Neumann", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
-        # self.perm_tag = self.mb.tag_get_handle(
-        #     "Permeability", 9, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
-        # self.source_tag = self.mb.tag_get_handle(
-        #     "Source term", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
-        # self.all_volumes = self.mb.get_entities_by_dimension(0, self.dimension)
 
-
-        # self.all_nodes = self.mb.get_entities_by_dimension(0, 0)
-        # self.mtu.construct_aentities(self.all_nodes)
-        #
-        # self.all_faces = self.mb.get_entities_by_dimension(0, self.dimension-1)
-        # self.all_edges = self.mb.get_entities_by_dimension(0, self.dimension-2)
         self.core = CoreMoab(mesh_file)
         self.init_Center()
         self.init_Volume()
@@ -242,30 +207,6 @@ class FineScaleMesh:
         #ler biblioteca do numpy para isso
         #metodo get_tetravolume como base
         pass
-
-    def print(self, text = None):
-        m1 = self.mb.create_meshset()
-        self.mb.add_entities(m1, self.all_nodes)
-
-        m2 = self.mb.create_meshset()
-        self.mb.add_entities(m2,self.all_faces)
-
-        m3 = self.mb.create_meshset()
-        self.mb.add_entities(m3, self.all_volumes)
-
-
-        #self.mb.add_entities(ms, self.all_volumes)
-
-        if text == None:
-            text = "output"
-        extension = ".vtk"
-        text1 = text + "-nodes" + extension
-        text2 = text + "-face" + extension
-        text3 = text + "-volume" + extension
-        self.mb.write_file(text1,[m1])
-        self.mb.write_file(text2,[m2])
-        self.mb.write_file(text3,[m3])
-
 
     @staticmethod
     def point_distance(coords_1, coords_2):
