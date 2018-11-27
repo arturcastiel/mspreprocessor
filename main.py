@@ -14,6 +14,6 @@ from meshHandle.multiscaleMesh import FineScaleMeshMS as msh
 
 
 
-M = msh("8.msh")
+M = msh("semi.msh")
 M.core.print()
 

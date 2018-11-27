@@ -1,5 +1,6 @@
 from pymoab import core, types, rng, topo_util
 import numpy as np
+import pdb
 
 class CoreMoab:
     def __init__(self,mesh_file, dim = 3):
@@ -14,6 +15,39 @@ class CoreMoab:
         self.all_faces = self.mb.get_entities_by_dimension(0, self.dimension-1)
         self.all_edges = self.mb.get_entities_by_dimension(0, self.dimension-2)
         self.handleDic = {}
+        self.read_bc()
+
+    def read_bc(self):
+        print("Inicializando BC")
+        physical_tag = self.mb.tag_get_handle("MATERIAL_SET")
+        dirchlet_tag = self.mb.tag_get_handle("DIRICHLET_SET")
+        neumamn_tag = self.mb.tag_get_handle("NEUMANN_SET")
+        physical_sets = self.mb.get_entities_by_type_and_tag(
+            0, types.MBENTITYSET, np.array(
+            (physical_tag,)), np.array((None,)))
+        dirichtlet_sets = self.mb.get_entities_by_type_and_tag(
+            0, types.MBENTITYSET, np.array(
+            (dirchlet_tag,)), np.array((None,)))
+        neumamn_sets = self.mb.get_entities_by_type_and_tag(
+            0, types.MBENTITYSET, np.array(
+            (neumamn_tag,)), np.array((None,)))
+
+
+        print(dirichtlet_sets)
+        print(neumamn_sets)
+        print(physical_sets)
+
+        #bunda_tag = self.core.mb.tag_get_handle("BUNDA")
+
+        self.handleDic["MATERIAL_SET"] = physical_tag
+        self.handleDic["DIRICHLET_SET"] = dirchlet_tag
+
+        self.handleDic["NEUMANN_SET"] = neumamn_tag
+        #self.core.handleDic["BUNDA"] = bunda_tag
+        pdb.set_trace()
+        print(physical_tag)
+        print(dirchlet_tag)
+        print(neumamn_tag)
 
     def deftagHandle(self,nameTag,dataSize, dataText = "float", dataDensity = types.MB_TAG_DENSE ):
          if dataText == 'float':
@@ -49,7 +83,6 @@ class CoreMoab:
         handles = np.asarray(rangeHandle)[vec.astype("uint")].astype("uint")
         return rng.Range(handles)
 
-
     def setData(self, nametag,data, indexVec = np.array([]), rangeEl = None):
          if rangeEl == None:
              rangeEl = self.all_volumes
@@ -58,8 +91,6 @@ class CoreMoab:
          handleTag = self.handleDic[nametag]
          self.mb.tag_set_data(handleTag,rangeEl,data)
 
-
-
     def print(self, text = None):
         m1 = self.mb.create_meshset()
         self.mb.add_entities(m1, self.all_nodes)
@@ -67,12 +98,17 @@ class CoreMoab:
         self.mb.add_entities(m2,self.all_faces)
         m3 = self.mb.create_meshset()
         self.mb.add_entities(m3, self.all_volumes)
+        m4 = self.mb.create_meshset()
+        self.mb.add_entities(m4, self.all_edges)
+
         if text == None:
             text = "output"
         extension = ".vtk"
         text1 = text + "-nodes" + extension
         text2 = text + "-face" + extension
         text3 = text + "-volume" + extension
+        text4 =  text + "-edges" + extension
         self.mb.write_file(text1,[m1])
         self.mb.write_file(text2,[m2])
         self.mb.write_file(text3,[m3])
+        self.mb.write_file(text4,[m4])

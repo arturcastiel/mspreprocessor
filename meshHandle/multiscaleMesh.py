@@ -15,7 +15,7 @@ print('FINESCALE WITH MULTISCALE')
 class FineScaleMeshMS(FineScaleMesh):
     def __init__(self,mesh_file, dim=3):
         super().__init__(mesh_file,dim)
-        self.macroDim()
+
         self.initPartition()
         # self.dimension = dim
         # self.mb = core.Core()
@@ -53,8 +53,9 @@ class FineScaleMeshMS(FineScaleMesh):
         # self.macroDim()
         # self.dirichlet_faces = set()
         # self.neumann_faces = set()
+
+
     def initPartition(self):
-        print("initPartition")
         config = self.readConfig()
         particionadorType = config.get("Particionador","algoritmo")
         print(particionadorType)
@@ -69,14 +70,6 @@ class FineScaleMeshMS(FineScaleMesh):
                             len(self.core.all_volumes), self.rx, self.ry, self.rz,*usedAttributes)
             self.core.deftagHandle("PARTITION", 1, dataText="int")
             self.core.setData("PARTITION",partTag[0])
-
-
-    def macroDim(self):
-        print("macroDim")
-        coords = self.core.mb.get_coords(self.core.all_nodes).reshape(len(self.core.all_nodes),3)
-        self.rx = (coords[:,0].min(), coords[:,0].max())
-        self.ry = (coords[:,1].min(), coords[:,1].max())
-        self.rz = (coords[:,2].min(), coords[:,2].max())
 
     def readConfig(self,configInput="msCoarse.ini"):
         configFile = cp.ConfigParser()
