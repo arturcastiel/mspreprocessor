@@ -20,34 +20,45 @@ class CoreMoab:
     def read_bc(self):
         print("Inicializando BC")
         physical_tag = self.mb.tag_get_handle("MATERIAL_SET")
-        dirchlet_tag = self.mb.tag_get_handle("DIRICHLET_SET")
-        neumamn_tag = self.mb.tag_get_handle("NEUMANN_SET")
+        # dirchlet_tag = self.mb.tag_get_handle("DIRICHLET_SET")
+        # neumamn_tag = self.mb.tag_get_handle("NEUMANN_SET")
         physical_sets = self.mb.get_entities_by_type_and_tag(
             0, types.MBENTITYSET, np.array(
             (physical_tag,)), np.array((None,)))
-        dirichtlet_sets = self.mb.get_entities_by_type_and_tag(
-            0, types.MBENTITYSET, np.array(
-            (dirchlet_tag,)), np.array((None,)))
-        neumamn_sets = self.mb.get_entities_by_type_and_tag(
-            0, types.MBENTITYSET, np.array(
-            (neumamn_tag,)), np.array((None,)))
+        self.handleDic["MATERIAL_SET"] = physical_tag
 
-
-        print(dirichtlet_sets)
-        print(neumamn_sets)
         print(physical_sets)
+        o = self.readData("MATERIAL_SET", rangeEl=physical_sets)
+
+        for cc in physical_sets:
+            print(cc)
+
+        # dirichtlet_sets = self.mb.get_entities_by_type_and_tag(
+        #     0, types.MBENTITYSET, np.array(
+        #     (dirchlet_tag,)), np.array((None,)))
+        # neumamn_sets = self.mb.get_entities_by_type_and_tag(
+        #     0, types.MBENTITYSET, np.array(
+        #     (neumamn_tag,)), np.array((None,)))
+
+
+        # print(dirichtlet_sets)
+        # print(neumamn_sets)
+        # print(physical_sets)
 
         #bunda_tag = self.core.mb.tag_get_handle("BUNDA")
 
-        self.handleDic["MATERIAL_SET"] = physical_tag
-        self.handleDic["DIRICHLET_SET"] = dirchlet_tag
 
-        self.handleDic["NEUMANN_SET"] = neumamn_tag
+
+
+
+        # self.handleDic["DIRICHLET_SET"] = dirchlet_tag
+        #
+        # self.handleDic["NEUMANN_SET"] = neumamn_tag
         #self.core.handleDic["BUNDA"] = bunda_tag
         pdb.set_trace()
-        print(physical_tag)
-        print(dirchlet_tag)
-        print(neumamn_tag)
+        # print(physical_tag)
+        # print(dirchlet_tag)
+        # print(neumamn_tag)
 
     def deftagHandle(self,nameTag,dataSize, dataText = "float", dataDensity = types.MB_TAG_DENSE ):
          if dataText == 'float':
