@@ -26,12 +26,17 @@ class CoreMoab:
             0, types.MBENTITYSET, np.array(
             (physical_tag,)), np.array((None,)))
         self.handleDic["MATERIAL_SET"] = physical_tag
+        bc_flags = self.readData("MATERIAL_SET", rangeEl = physical_sets)
 
-        print(physical_sets)
-        o = self.readData("MATERIAL_SET", rangeEl=physical_sets)
+        material_flags =  bc_flags[bc_flags < 100]
+        dirichlet_flags = bc_flags[(bc_flags < 200) & (bc_flags >= 100)]
+        neumamn_flags = bc_flags[(bc_flags < 300) & (bc_flags >= 200)]
+        extra_flags = bc_flags[(bc_flags >= 300)]
 
-        for cc in physical_sets:
-            print(cc)
+        print(self.mb.type_from_handle(physical_sets[0]))
+        for flag in bc_flags:
+            print(flag)
+
 
         # dirichtlet_sets = self.mb.get_entities_by_type_and_tag(
         #     0, types.MBENTITYSET, np.array(
