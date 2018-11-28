@@ -26,13 +26,21 @@ def piramidVolume(pi_nodes):
     #   /____\           |_____|
     # P1/4  P2/3        P1     P2
     #input:
-    # A Matrix with 5x3 elements in which
+    # A Matrix with 4x3 elements in which
     # each line is one of the 5 nodes that
     # a given piramid is comprised
+    # The 3 first nodes lie on the plane of the base (coplanar points) and must be connected. The fourth node of the matrix must be the top point (P5).
     # ouput: the volume of the given piramid
+    vect_1 = pi_nodes[1] - pi_nodes[0]
+    vect_2 = pi_nodes[2] - pi_nodes[0]
+    base_area = abs(np.dot(vect_1, vect_2))
 
-    
-    print(pi_nodes)
+    vect_3 = pi_nodes[3] - pi_nodes[0]
+    normal_vect = np.cross(vect_1, vect_2)
+    piram_height = np.dot(vect_3, normal_vect)/(np.linalg.norm(normal_vect)
+
+    piram_vol = (1/3)*base_area*piram_height
+    return(piram_vol)
 
 def hexahedronVolume(pi_nodes):
     #
