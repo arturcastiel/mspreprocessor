@@ -76,4 +76,3 @@ class FineScaleMeshMS(FineScaleMesh):
         configFile.read(configInput)
         return configFile
 
-#--------------Início dos parâmetros de entrada-------------------

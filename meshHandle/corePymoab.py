@@ -43,39 +43,40 @@ class CoreMoab:
             0, types.MBENTITYSET, np.array(
             (physical_tag,)), np.array((None,)))
         self.handleDic["MATERIAL_SET"] = physical_tag
-        self.deftagHandle("DIRICHLET", 1, dataText="int", dataDensity="sparse")
-        self.deftagHandle("Neumamn", 1, dataText="int", dataDensity="sparse")
-        self.deftagHandle("Material", 1, dataText="int")
+        self.deftagHandle("DIRICHLET", 1, dataText="int")
+        self.deftagHandle("NEUMAMN", 1, dataText="int")
+        self.deftagHandle("MATERIAL", 1, dataText="int")
+        self.deftagHandle("WELLS", 1, dataText="int", dataDensity="sparse")
         for bcset in physical_sets:
             bc_flags = self.readData("MATERIAL_SET", rangeEl=bcset)
             entity_handle_nodes = self.mb.get_entities_by_dimension(bcset, 0)
             entity_handle_edges = self.mb.get_entities_by_dimension(bcset, 1)
             entity_handle_faces = self.mb.get_entities_by_dimension(bcset, 2)
             entity_handle_volumes = self.mb.get_entities_by_dimension(bcset, 3)
-            vec1 = np.ones(len(entity_handle_nodes)).astype(int) * (bc_flags[0, 0] - 1)
-            vec2 = np.ones(len(entity_handle_edges)).astype(int) * (bc_flags[0, 0] - 1)
-            vec3 = np.ones(len(entity_handle_faces)).astype(int) * (bc_flags[0, 0] - 1)
-            vec4 = np.ones(len(entity_handle_volumes)).astype(int) * (bc_flags[0, 0] - 1)
+            vec1 = np.ones(len(entity_handle_nodes)).astype(int) * (bc_flags[0, 0] )
+            vec2 = np.ones(len(entity_handle_edges)).astype(int) * (bc_flags[0, 0] )
+            vec3 = np.ones(len(entity_handle_faces)).astype(int) * (bc_flags[0, 0] )
+            vec4 = np.ones(len(entity_handle_volumes)).astype(int) * (bc_flags[0, 0] )
             if bc_flags[0, 0] < 100:
-                self.setData("Material", data=vec1, rangeEl=entity_handle_nodes)
-                self.setData("Material", data=vec2, rangeEl=entity_handle_edges)
-                self.setData("Material", data=vec3, rangeEl=entity_handle_faces)
-                self.setData("Material", data=vec4, rangeEl=entity_handle_volumes)
+                self.setData("MATERIAL", data=vec1, rangeEl=entity_handle_nodes)
+                self.setData("MATERIAL", data=vec2, rangeEl=entity_handle_edges)
+                self.setData("MATERIAL", data=vec3, rangeEl=entity_handle_faces)
+                self.setData("MATERIAL", data=vec4, rangeEl=entity_handle_volumes)
             elif (bc_flags[0, 0] < 200) & (bc_flags[0, 0] >= 100):
                 self.setData("DIRICHLET", data=vec1, rangeEl=entity_handle_nodes)
                 self.setData("DIRICHLET", data=vec2, rangeEl=entity_handle_edges)
                 self.setData("DIRICHLET", data=vec3, rangeEl=entity_handle_faces)
                 self.setData("DIRICHLET", data=vec4, rangeEl=entity_handle_volumes)
             elif (bc_flags[0, 0] < 300) & (bc_flags[0, 0] >= 200):
-                self.setData("Neumamn", data=vec1, rangeEl=entity_handle_nodes)
-                self.setData("Neumamn", data=vec2, rangeEl=entity_handle_edges)
-                self.setData("Neumamn", data=vec3, rangeEl=entity_handle_faces)
-                self.setData("Neumamn", data=vec4, rangeEl=entity_handle_volumes)
+                self.setData("NEUMAMN", data=vec1, rangeEl=entity_handle_nodes)
+                self.setData("NEUMAMN", data=vec2, rangeEl=entity_handle_edges)
+                self.setData("NEUMAMN", data=vec3, rangeEl=entity_handle_faces)
+                self.setData("NEUMAMN", data=vec4, rangeEl=entity_handle_volumes)
             elif (bc_flags[0, 0] >= 300):
-                self.setData("Material", data=vec1, rangeEl=entity_handle_nodes)
-                self.setData("Material", data=vec2, rangeEl=entity_handle_edges)
-                self.setData("Material", data=vec3, rangeEl=entity_handle_faces)
-                self.setData("Material", data=vec4, rangeEl=entity_handle_volumes)
+                self.setData("WELLS", data=vec1, rangeEl=entity_handle_nodes)
+                self.setData("WELLS", data=vec2, rangeEl=entity_handle_edges)
+                self.setData("WELLS", data=vec3, rangeEl=entity_handle_faces)
+                self.setData("WELLS", data=vec4, rangeEl=entity_handle_volumes)
 
     def deftagHandle(self,nameTag,dataSize, dataText = "float", dataDensity = "dense"):
          if dataDensity == "dense":
@@ -143,7 +144,7 @@ class CoreMoab:
         text1 = text + "-nodes" + extension
         text2 = text + "-face" + extension
         text3 = text + "-volume" + extension
-        text4 =  text + "-edges" + extension
+        text4 = text + "-edges" + extension
         self.mb.write_file(text1,[m1])
         self.mb.write_file(text2,[m2])
         self.mb.write_file(text3,[m3])

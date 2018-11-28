@@ -2,10 +2,7 @@
 import numpy as np
 from meshHandle.multiscaleMesh import FineScaleMeshMS as msh
 import pdb
-# import numpy as np
-#
-# import pdb
-# import msCoarseningLib.algoritmo
+
 
 #docker run -t -it -v  /home/arturcastiel/projetos:/pytest desenvolvimento:latest bash -c "cd /pytest; bash"
 
@@ -17,7 +14,6 @@ import pdb
 
 M = msh("semi.msh")
 
-M.core.readData("DIRICHLET", rangeEl=M.core.all_nodes)
+# M.core.readData("DIRICHLET", rangeEl = M.core.all_nodes)
 
 M.core.print()
-pdb.set_trace()
