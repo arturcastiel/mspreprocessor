@@ -1,6 +1,7 @@
 
 import numpy as np
 from meshHandle.multiscaleMesh import FineScaleMeshMS as msh
+import pdb
 # import numpy as np
 #
 # import pdb
@@ -15,5 +16,8 @@ from meshHandle.multiscaleMesh import FineScaleMeshMS as msh
 
 
 M = msh("semi.msh")
-M.core.print()
 
+M.core.readData("DIRICHLET", rangeEl=M.core.all_nodes)
+
+M.core.print()
+pdb.set_trace()

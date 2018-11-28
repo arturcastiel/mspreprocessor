@@ -54,6 +54,6 @@ Recombine Surface {1, 3, 6, 5, 2, 4};
 
 Physical Volume(380) = {1};
 Physical Point(101) = {1, 2, 3, 4};
-Physical Line(102) = {1, 2, 3, 4};
+Physical Line(201) = {1, 2, 3, 4};
 Physical Surface(201) = {1,2,3};
 Physical Surface(101) = {4,5,6};

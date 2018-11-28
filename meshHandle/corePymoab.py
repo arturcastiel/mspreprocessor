@@ -15,108 +15,69 @@ class CoreMoab:
         self.all_faces = self.mb.get_entities_by_dimension(0, self.dimension-1)
         self.all_edges = self.mb.get_entities_by_dimension(0, self.dimension-2)
         self.handleDic = {}
-
         self.read_parallel()
-        #self.read_bc()
+        self.read_bc()
 
     def read_parallel(self):
-        print("Incializando Particionamento Paralelo")
-        parallel_tag = self.mb.tag_get_handle("PARALLEL_PARTITION")
-        self.handleDic["PARALLEL_PARTITION"] = parallel_tag
-        parallel_sets = self.mb.get_entities_by_type_and_tag(
-            0, types.MBENTITYSET, np.array(
-            (parallel_tag,)), np.array((None,)))
-        self.deftagHandle("PARALELO",dataSize=1,dataText="int")
-        for set in parallel_sets:
-            num_tag = self.readData("PARALLEL_PARTITION", rangeEl = set)
-            entities = self.mb.get_entities_by_dimension(set, 3)
-            vec = np.ones(len(entities)).astype(int) * num_tag[0,0]
-            self.setData("PARALELO",data = vec,rangeEl=entities)
-
-
+        try:
+            parallel_tag = self.mb.tag_get_handle("PARALLEL_PARTITION")
+        except:
+            print("Parallel Partition Tag not found \nMesh initialized with not parallel partition")
+            flag = True
+        if not flag:
+            self.handleDic["PARALLEL_PARTITION"] = parallel_tag
+            parallel_sets = self.mb.get_entities_by_type_and_tag(
+                0, types.MBENTITYSET, np.array(
+                (parallel_tag,)), np.array((None,)))
+            self.deftagHandle("PARALLEL",dataSize=1,dataText="int")
+            for set in parallel_sets:
+                num_tag = self.readData("PARALLEL_PARTITION", rangeEl = set)
+                entities = self.mb.get_entities_by_dimension(set, 3)
+                vec = np.ones(len(entities)).astype(int) * num_tag[0,0]
+                self.setData("PARALLEL",data = vec,rangeEl=entities)
 
     def read_bc(self):
         print("Inicializando BC")
         physical_tag = self.mb.tag_get_handle("MATERIAL_SET")
-        parallel_tag = self.mb.tag_get_handle("PARALLEL_PARTITION")
-        # dirchlet_tag = self.mb.tag_get_handle("DIRICHLET_SET")
-        # neumamn_tag = self.mb.tag_get_handle("NEUMANN_SET")
         physical_sets = self.mb.get_entities_by_type_and_tag(
             0, types.MBENTITYSET, np.array(
             (physical_tag,)), np.array((None,)))
         self.handleDic["MATERIAL_SET"] = physical_tag
-        self.deftagHandle("Dirichlet",1, dataText="int")
-        self.deftagHandle("Neumamn", 1, dataText="int")
+        self.deftagHandle("DIRICHLET", 1, dataText="int", dataDensity="sparse")
+        self.deftagHandle("Neumamn", 1, dataText="int", dataDensity="sparse")
         self.deftagHandle("Material", 1, dataText="int")
-
-
         for bcset in physical_sets:
-             bc_flags = self.readData("MATERIAL_SET", rangeEl = bcset)
-             entity_handle_nodes = self.mb.get_entities_by_dimension(bcset,0)
-             entity_handle_edges = self.mb.get_entities_by_dimension(bcset,1)
-             entity_handle_faces = self.mb.get_entities_by_dimension(bcset,2)
-             entity_handle_volumes = self.mb.get_entities_by_dimension(bcset,3)
-
-             print([bc_flags,entity_handle_nodes,entity_handle_edges,entity_handle_faces,entity_handle_volumes ])
-
-
-        entity_handle_meshset = self.mb.get_entities_by_type(0, 11)
-        #
-        # print(entity_handle_meshset)
-        # for entity in entity_handle_meshset:
-        #     print(self.mb.tag_get_tags_on_entity(entity))
-
-
-            #
-            #
-            # # if bc_flags < 100:
-            # #     self.
-
-
-
-        #
-        # material_flags =  bc_flags[bc_flags < 100]
-        # dirichlet_flags = bc_flags[(bc_flags < 200) & (bc_flags >= 100)]
-        # neumamn_flags = bc_flags[(bc_flags < 300) & (bc_flags >= 200)]
-        # extra_flags = bc_flags[(bc_flags >= 300)]
-
-        # print(self.mb.type_from_handle(physical_sets[0]))
-        #
-        #
-        # for flag in bc_flags:
-        #     print(flag)
-
-
-
-        # dirichtlet_sets = self.mb.get_entities_by_type_and_tag(
-        #     0, types.MBENTITYSET, np.array(
-        #     (dirchlet_tag,)), np.array((None,)))
-        # neumamn_sets = self.mb.get_entities_by_type_and_tag(
-        #     0, types.MBENTITYSET, np.array(
-        #     (neumamn_tag,)), np.array((None,)))
-
-
-        # print(dirichtlet_sets)
-        # print(neumamn_sets)
-        # print(physical_sets)
-
-        #bunda_tag = self.core.mb.tag_get_handle("BUNDA")
-
-
-
-
-
-        # self.handleDic["DIRICHLET_SET"] = dirchlet_tag
-        #
-        # self.handleDic["NEUMANN_SET"] = neumamn_tag
-        #self.core.handleDic["BUNDA"] = bunda_tag
-        pdb.set_trace()
-        # print(physical_tag)
-        # print(dirchlet_tag)
-        # print(neumamn_tag)
+            bc_flags = self.readData("MATERIAL_SET", rangeEl=bcset)
+            entity_handle_nodes = self.mb.get_entities_by_dimension(bcset, 0)
+            entity_handle_edges = self.mb.get_entities_by_dimension(bcset, 1)
+            entity_handle_faces = self.mb.get_entities_by_dimension(bcset, 2)
+            entity_handle_volumes = self.mb.get_entities_by_dimension(bcset, 3)
+            vec1 = np.ones(len(entity_handle_nodes)).astype(int) * (bc_flags[0, 0] - 1)
+            vec2 = np.ones(len(entity_handle_edges)).astype(int) * (bc_flags[0, 0] - 1)
+            vec3 = np.ones(len(entity_handle_faces)).astype(int) * (bc_flags[0, 0] - 1)
+            vec4 = np.ones(len(entity_handle_volumes)).astype(int) * (bc_flags[0, 0] - 1)
+            if bc_flags[0, 0] < 100:
+                self.setData("Material", data=vec1, rangeEl=entity_handle_nodes)
+                self.setData("Material", data=vec2, rangeEl=entity_handle_edges)
+                self.setData("Material", data=vec3, rangeEl=entity_handle_faces)
+                self.setData("Material", data=vec4, rangeEl=entity_handle_volumes)
+            elif (bc_flags[0, 0] < 200) & (bc_flags[0, 0] >= 100):
+                self.setData("DIRICHLET", data=vec1, rangeEl=entity_handle_nodes)
+                self.setData("DIRICHLET", data=vec2, rangeEl=entity_handle_edges)
+                self.setData("DIRICHLET", data=vec3, rangeEl=entity_handle_faces)
+                self.setData("DIRICHLET", data=vec4, rangeEl=entity_handle_volumes)
+            elif (bc_flags[0, 0] < 300) & (bc_flags[0, 0] >= 200):
+                self.setData("Neumamn", data=vec1, rangeEl=entity_handle_nodes)
+                self.setData("Neumamn", data=vec2, rangeEl=entity_handle_edges)
+                self.setData("Neumamn", data=vec3, rangeEl=entity_handle_faces)
+                self.setData("Neumamn", data=vec4, rangeEl=entity_handle_volumes)
+            elif (bc_flags[0, 0] >= 300):
+                self.setData("Material", data=vec1, rangeEl=entity_handle_nodes)
+                self.setData("Material", data=vec2, rangeEl=entity_handle_edges)
+                self.setData("Material", data=vec3, rangeEl=entity_handle_faces)
+                self.setData("Material", data=vec4, rangeEl=entity_handle_volumes)
 
     def deftagHandle(self,nameTag,dataSize, dataText = "float", dataDensity = "dense"):
-
          if dataDensity == "dense":
              dataDensity = types.MB_TAG_DENSE
          elif dataDensity == "sparse":
