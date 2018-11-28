@@ -15,27 +15,77 @@ class CoreMoab:
         self.all_faces = self.mb.get_entities_by_dimension(0, self.dimension-1)
         self.all_edges = self.mb.get_entities_by_dimension(0, self.dimension-2)
         self.handleDic = {}
-        self.read_bc()
+
+        self.read_parallel()
+        #self.read_bc()
+
+    def read_parallel(self):
+        print("Incializando Particionamento Paralelo")
+        parallel_tag = self.mb.tag_get_handle("PARALLEL_PARTITION")
+        self.handleDic["PARALLEL_PARTITION"] = parallel_tag
+        parallel_sets = self.mb.get_entities_by_type_and_tag(
+            0, types.MBENTITYSET, np.array(
+            (parallel_tag,)), np.array((None,)))
+        self.deftagHandle("PARALELO",dataSize=1,dataText="int")
+        for set in parallel_sets:
+            num_tag = self.readData("PARALLEL_PARTITION", rangeEl = set)
+            entities = self.mb.get_entities_by_dimension(set, 3)
+            vec = np.ones(len(entities)).astype(int) * num_tag[0,0]
+            self.setData("PARALELO",data = vec,rangeEl=entities)
+
+
 
     def read_bc(self):
         print("Inicializando BC")
         physical_tag = self.mb.tag_get_handle("MATERIAL_SET")
+        parallel_tag = self.mb.tag_get_handle("PARALLEL_PARTITION")
         # dirchlet_tag = self.mb.tag_get_handle("DIRICHLET_SET")
         # neumamn_tag = self.mb.tag_get_handle("NEUMANN_SET")
         physical_sets = self.mb.get_entities_by_type_and_tag(
             0, types.MBENTITYSET, np.array(
             (physical_tag,)), np.array((None,)))
         self.handleDic["MATERIAL_SET"] = physical_tag
-        bc_flags = self.readData("MATERIAL_SET", rangeEl = physical_sets)
+        self.deftagHandle("Dirichlet",1, dataText="int")
+        self.deftagHandle("Neumamn", 1, dataText="int")
+        self.deftagHandle("Material", 1, dataText="int")
 
-        material_flags =  bc_flags[bc_flags < 100]
-        dirichlet_flags = bc_flags[(bc_flags < 200) & (bc_flags >= 100)]
-        neumamn_flags = bc_flags[(bc_flags < 300) & (bc_flags >= 200)]
-        extra_flags = bc_flags[(bc_flags >= 300)]
 
-        print(self.mb.type_from_handle(physical_sets[0]))
-        for flag in bc_flags:
-            print(flag)
+        for bcset in physical_sets:
+             bc_flags = self.readData("MATERIAL_SET", rangeEl = bcset)
+             entity_handle_nodes = self.mb.get_entities_by_dimension(bcset,0)
+             entity_handle_edges = self.mb.get_entities_by_dimension(bcset,1)
+             entity_handle_faces = self.mb.get_entities_by_dimension(bcset,2)
+             entity_handle_volumes = self.mb.get_entities_by_dimension(bcset,3)
+
+             print([bc_flags,entity_handle_nodes,entity_handle_edges,entity_handle_faces,entity_handle_volumes ])
+
+
+        entity_handle_meshset = self.mb.get_entities_by_type(0, 11)
+        #
+        # print(entity_handle_meshset)
+        # for entity in entity_handle_meshset:
+        #     print(self.mb.tag_get_tags_on_entity(entity))
+
+
+            #
+            #
+            # # if bc_flags < 100:
+            # #     self.
+
+
+
+        #
+        # material_flags =  bc_flags[bc_flags < 100]
+        # dirichlet_flags = bc_flags[(bc_flags < 200) & (bc_flags >= 100)]
+        # neumamn_flags = bc_flags[(bc_flags < 300) & (bc_flags >= 200)]
+        # extra_flags = bc_flags[(bc_flags >= 300)]
+
+        # print(self.mb.type_from_handle(physical_sets[0]))
+        #
+        #
+        # for flag in bc_flags:
+        #     print(flag)
+
 
 
         # dirichtlet_sets = self.mb.get_entities_by_type_and_tag(
@@ -65,7 +115,16 @@ class CoreMoab:
         # print(dirchlet_tag)
         # print(neumamn_tag)
 
-    def deftagHandle(self,nameTag,dataSize, dataText = "float", dataDensity = types.MB_TAG_DENSE ):
+    def deftagHandle(self,nameTag,dataSize, dataText = "float", dataDensity = "dense"):
+
+         if dataDensity == "dense":
+             dataDensity = types.MB_TAG_DENSE
+         elif dataDensity == "sparse":
+             dataDensity = types.MB_TAG_SPARSE
+         elif dataDensity == "bit":
+             dataDensity = types.MB_TAG_BIT
+         else:
+             print("Please define a valid tag type")
          if dataText == 'float':
              dataType = types.MB_TYPE_DOUBLE
          elif dataText == "int":
