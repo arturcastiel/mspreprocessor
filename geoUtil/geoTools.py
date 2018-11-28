@@ -16,8 +16,9 @@ def tetraVolume(tet_nodes):
     vect_1 = tet_nodes[1] - tet_nodes[0]
     vect_2 = tet_nodes[2] - tet_nodes[0]
     vect_3 = tet_nodes[3] - tet_nodes[0]
-    vol_eval = abs(np.dot(np.cross(vect_1, vect_2), vect_3))/1
+    vol_eval = abs(np.dot(np.cross(vect_1, vect_2), vect_3))/6
     return vol_eval
+
 def piramidVolume(pi_nodes):
     #     P5           P4 _____ P3
     #     /\             |     |
@@ -28,9 +29,11 @@ def piramidVolume(pi_nodes):
     # A Matrix with 5x3 elements in which
     # each line is one of the 5 nodes that
     # a given piramid is comprised
-    #ouput:
-    # the volume of the given piramid
+    # ouput: the volume of the given piramid
+
+    
     print(pi_nodes)
+
 def hexahedronVolume(pi_nodes):
     #
     #    ______   <- F2
@@ -63,4 +66,3 @@ def hexahedronVolume(pi_nodes):
 def teste():
     print("Entrou")
     pass
-
