@@ -17,11 +17,9 @@ class CoreMoab:
         self.check_integrity()
         self.handleDic = {}
         self.flag_dic = {}
-        self.read_bc()
+        self.read_flags()
         self.read_parallel()
-        
-
-
+        self.create_parallel_meshset()
         #self.create_flag_tag()
 
 
@@ -39,6 +37,30 @@ class CoreMoab:
                 print("------------------------------\nError creating \n" +
                       list_words[index] + " was not imported")
             index += 1
+
+    def create_parallel_meshset(self):
+        try:
+            parallel_tag = self.mb.tag_get_handle("PARALLEL_PARTITION")
+            flag = False
+        except:
+            print("Parallel Partition Tag not found \nAborting creating parallel partition entities.")
+            flag = True
+        if not flag:
+            print("Parallel Partition Tag detected \nCreating parallel partitions entities")
+            self.handleDic["PARALLEL_PARTITION"] = parallel_tag
+            parallel_sets = self.mb.get_entities_by_type_and_tag(
+                0, types.MBENTITYSET, np.array(
+                (parallel_tag,)), np.array((None,)))
+            self.deftagHandle("PARALLEL",dataSize=1,dataText="int")
+            partition_volumes = []
+            for set in parallel_sets:
+                num_tag = self.readData("PARALLEL_PARTITION", rangeEl = set)[0,0]
+                list_entity = [self.mb.get_entities_by_dimension(set, 0), self.mb.get_entities_by_dimension(set, 1),
+                               self.mb.get_entities_by_dimension(set, 2), self.mb.get_entities_by_dimension(set, 3)]
+                # print([num_tag, entities])
+                partition_volumes.append(list_entity)
+        return partition_volumes
+
 
 
     def read_parallel(self):
@@ -62,7 +84,7 @@ class CoreMoab:
                 vec = np.ones(len(entities)).astype(int) * num_tag[0,0]
                 self.setData("PARALLEL",data = vec,rangeEl=entities)
 
-    def read_bc(self):
+    def read_flags(self):
         physical_tag = self.mb.tag_get_handle("MATERIAL_SET")
         physical_sets = self.mb.get_entities_by_type_and_tag(
             0, types.MBENTITYSET, np.array(
