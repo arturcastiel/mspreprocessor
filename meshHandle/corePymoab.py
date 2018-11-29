@@ -14,19 +14,42 @@ class CoreMoab:
         self.mtu.construct_aentities(self.all_nodes)
         self.all_faces = self.mb.get_entities_by_dimension(0, self.dimension-1)
         self.all_edges = self.mb.get_entities_by_dimension(0, self.dimension-2)
+        self.check_integrity()
         self.handleDic = {}
-        self.read_parallel()
+        self.flag_dic = {}
         self.read_bc()
+        self.read_parallel()
+        
 
+
+        #self.create_flag_tag()
+
+
+
+    def check_integrity(self):
+        # check if the mesh contains
+        check_list = [len(self.all_nodes), len(self.all_edges), len(self.all_faces), len(self.all_volumes)]
+        list_words = ['Nodes', "Edges", "Faces", "Volumes"]
+        print("Checking mesh integrity:")
+        index = 0
+        for entity in check_list:
+            if entity > 0:
+                print(list_words[index] + " successfully imported")
+            else:
+                print("------------------------------\nError creating \n" +
+                      list_words[index] + " was not imported")
+            index += 1
 
 
     def read_parallel(self):
         try:
             parallel_tag = self.mb.tag_get_handle("PARALLEL_PARTITION")
+            flag = False
         except:
-            print("Parallel Partition Tag not found \nMesh initialized with not parallel partition")
+            print("Parallel Partition Tag not found \nMesh initialized with no parallel partition")
             flag = True
         if not flag:
+            print("Parallel Partition Tag detected \nMesh initialized with a parallel partition")
             self.handleDic["PARALLEL_PARTITION"] = parallel_tag
             parallel_sets = self.mb.get_entities_by_type_and_tag(
                 0, types.MBENTITYSET, np.array(
@@ -35,40 +58,51 @@ class CoreMoab:
             for set in parallel_sets:
                 num_tag = self.readData("PARALLEL_PARTITION", rangeEl = set)
                 entities = self.mb.get_entities_by_dimension(set, 3)
+                # print([num_tag, entities])
                 vec = np.ones(len(entities)).astype(int) * num_tag[0,0]
                 self.setData("PARALLEL",data = vec,rangeEl=entities)
 
     def read_bc(self):
-        print("Inicializando BC")
         physical_tag = self.mb.tag_get_handle("MATERIAL_SET")
         physical_sets = self.mb.get_entities_by_type_and_tag(
             0, types.MBENTITYSET, np.array(
             (physical_tag,)), np.array((None,)))
         self.handleDic["MATERIAL_SET"] = physical_tag
-        self.deftagHandle("FLAGS", 1, dataText="int",dataDensity="sparse")
-        self.deftagHandle("MATERIAL", 1, dataText="int",dataDensity="sparse")
-        self.init_tag("MATERIAL")
-        self.init_tag("FLAGS")
+        flag_list = np.array([])
+        for set in physical_sets:
+            bc_flag = self.readData("MATERIAL_SET", rangeEl=set)[0,0]
+            flag_list = np.append(flag_list,bc_flag)
+            list_entity = [self.mb.get_entities_by_dimension(set,0), self.mb.get_entities_by_dimension(set,1),
+                         self.mb.get_entities_by_dimension(set,2), self.mb.get_entities_by_dimension(set,3)]
+            self.flag_dic[bc_flag] = list_entity
+        self.flag_list = flag_list.sort(axis=0)
+        # self.handleDic["MATERIAL_SET"] = physical_tag
+        # self.deftagHandle("FLAGS", 1, dataText="int",dataDensity="sparse")
+        # self.deftagHandle("MATERIAL", 1, dataText="int",dataDensity="sparse")
+        # self.init_tag("MATERIAL")
+        # self.init_tag("FLAGS")
 
+
+
+    def create_flag_tag(self):
+        print("Creating Flag Tag")
+        physical_tag = self.mb.tag_get_handle("MATERIAL_SET")
+        physical_sets = self.mb.get_entities_by_type_and_tag(
+            0, types.MBENTITYSET, np.array(
+            (physical_tag,)), np.array((None,)))
+        self.handleDic["MATERIAL_SET"] = physical_tag
+        self.deftagHandle("FLAGS", 1, dataText="int")
+        self.deftagHandle("MATERIAL", 1, dataText="int")
+        #self.init_tag("MATERIAL")
+        self.init_tag("FLAGS")
         for bcset in physical_sets:
             bc_flags = self.readData("MATERIAL_SET", rangeEl=bcset)
-            # entity_handle_nodes = self.mb.get_entities_by_dimension(bcset, 0)
-            # entity_handle_edges = self.mb.get_entities_by_dimension(bcset, 1)
-            # entity_handle_faces = self.mb.get_entities_by_dimension(bcset, 2)
-            # entity_handle_volumes = self.mb.get_entities_by_dimension(bcset, 3)
             entity_list = self.range_merge(self.mb.get_entities_by_dimension(bcset, 0),
                                            self.mb.get_entities_by_dimension(bcset, 1),
                                            self.mb.get_entities_by_dimension(bcset, 2),
                                            self.mb.get_entities_by_dimension(bcset, 3))
-
             print([entity_list, bc_flags[0,0]])
             vec = np.ones(len(entity_list)).astype(int) * (bc_flags[0, 0])
-            #
-            #
-            # vec1 = np.ones(len(entity_handle_nodes)).astype(int) * (bc_flags[0, 0] )
-            # vec2 = np.ones(len(entity_handle_edges)).astype(int) * (bc_flags[0, 0] )
-            # vec3 = np.ones(len(entity_handle_faces)).astype(int) * (bc_flags[0, 0] )
-            # vec4 = np.ones(len(entity_handle_volumes)).astype(int) * (bc_flags[0, 0] )
             if bc_flags[0, 0] < 100:
                 print("MATERIAL FLAG DE MATERIAL GRAVADO")
                 self.setData("MATERIAL", data=vec, rangeEl=entity_list)
@@ -157,7 +191,6 @@ class CoreMoab:
         self.mb.add_entities(m3, self.all_volumes)
         m4 = self.mb.create_meshset()
         self.mb.add_entities(m4, self.all_edges)
-
         if text == None:
             text = "output"
         extension = ".vtk"
@@ -165,7 +198,9 @@ class CoreMoab:
         text2 = text + "-face" + extension
         text3 = text + "-volume" + extension
         text4 = text + "-edges" + extension
+        text5 = text + "-all" + extension
         self.mb.write_file(text1,[m1])
         self.mb.write_file(text2,[m2])
         self.mb.write_file(text3,[m3])
         self.mb.write_file(text4,[m4])
+        self.mb.write_file(text5)

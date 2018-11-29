@@ -29,7 +29,8 @@ def piramidVolume(pi_nodes):
     # A Matrix with 4x3 elements in which
     # each line is one of the 5 nodes that
     # a given piramid is comprised
-    # The 3 first nodes lie on the plane of the base (coplanar points) and must be connected. The fourth node of the matrix must be the top point (P5).
+    # The 3 first nodes lie on the plane of the base (coplanar points) and must be connected.
+    # The fourth node of the matrix must be the top point (P5).
     # ouput: the volume of the given piramid
     vect_1 = pi_nodes[1] - pi_nodes[0]
     vect_2 = pi_nodes[2] - pi_nodes[0]

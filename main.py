@@ -16,4 +16,5 @@ M = msh("semi.msh")
 
 # M.core.readData("DIRICHLET", rangeEl = M.core.all_nodes)
 
+pdb.set_trace()
 M.core.print()
