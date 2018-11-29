@@ -42,7 +42,7 @@ def piramidVolume(pi_nodes):
     piram_vol = (1/3)*base_area*piram_height
     return(piram_vol)
 
-def hexahedronVolume(pi_nodes):
+def hexahedronVolume(hexa_nodes):
     #
     #    ______   <- F2
     #   /     /|
@@ -69,8 +69,14 @@ def hexahedronVolume(pi_nodes):
     # each line is one of the 8 nodes that
     # a given hexahedron
     #ouput:
-    # the volume of the given piramid
-    print(pi_nodes)
+    # the volume of the given hexahedron
+
+    vect_1 = hexa_nodes[1] - hexa_nodes[0]
+    vect_2 = hexa_nodes[2] - hexa_nodes[0]
+    vect_3 = hexa_nodes[3] - hexa_nodes[0]
+    hexa_vol = abs(np.dot(np.cross(vect_1, vect_2), vect_3))/1
+    return (hexa_vol)
+
 def teste():
     print("Entrou")
     pass
