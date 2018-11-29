@@ -100,7 +100,7 @@ class FineScaleMesh:
         self.set_information(boundary_condition, physicals_values,
                              dim_target, set_connect=set_nodes)
 
-    def init_BC(self):
+    def init_bc(self):
         print("Inicializando BC")
         physical_tag = self.core.mb.tag_get_handle("MATERIAL_SET")
         dirchlet_tag = self.core.mb.tag_get_handle("DIRICHLET_SET")

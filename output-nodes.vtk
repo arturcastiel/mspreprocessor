@@ -476,12 +476,14 @@ LOOKUP_TABLE default
 231 
 232 
 233 
-SCALARS DIRICHLET int 1
+SCALARS FLAGS int 1
 LOOKUP_TABLE default
 101 
 101 
 101 
 101 
+202 
+202 
 0 
 0 
 0 
@@ -710,16 +712,14 @@ LOOKUP_TABLE default
 0 
 0 
 0 
-0 
-0 
-SCALARS NEUMAMN int 1
+SCALARS MATERIAL int 1
 LOOKUP_TABLE default
 0 
 0 
 0 
 0 
-202 
-202 
+0 
+0 
 0 
 0 
 0 

@@ -52,7 +52,7 @@ Recombine Surface {1, 3, 6, 5, 2, 4};
 //Transfinite Surface {5};
 //Transfinite Volume {1};
 
-Physical Volume(380) = {1};
+Physical Volume(2) = {1};
 Physical Point(101) = {1, 2, 3, 4};
 Physical Point(202) = {5,6};
 

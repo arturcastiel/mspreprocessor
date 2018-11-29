@@ -18,6 +18,8 @@ class CoreMoab:
         self.read_parallel()
         self.read_bc()
 
+
+
     def read_parallel(self):
         try:
             parallel_tag = self.mb.tag_get_handle("PARALLEL_PARTITION")
@@ -43,40 +45,36 @@ class CoreMoab:
             0, types.MBENTITYSET, np.array(
             (physical_tag,)), np.array((None,)))
         self.handleDic["MATERIAL_SET"] = physical_tag
-        self.deftagHandle("DIRICHLET", 1, dataText="int")
-        self.deftagHandle("NEUMAMN", 1, dataText="int")
-        self.deftagHandle("MATERIAL", 1, dataText="int")
-        self.deftagHandle("WELLS", 1, dataText="int", dataDensity="sparse")
+        self.deftagHandle("FLAGS", 1, dataText="int",dataDensity="sparse")
+        self.deftagHandle("MATERIAL", 1, dataText="int",dataDensity="sparse")
+        self.init_tag("MATERIAL")
+        self.init_tag("FLAGS")
+
         for bcset in physical_sets:
             bc_flags = self.readData("MATERIAL_SET", rangeEl=bcset)
-            entity_handle_nodes = self.mb.get_entities_by_dimension(bcset, 0)
-            entity_handle_edges = self.mb.get_entities_by_dimension(bcset, 1)
-            entity_handle_faces = self.mb.get_entities_by_dimension(bcset, 2)
-            entity_handle_volumes = self.mb.get_entities_by_dimension(bcset, 3)
-            vec1 = np.ones(len(entity_handle_nodes)).astype(int) * (bc_flags[0, 0] )
-            vec2 = np.ones(len(entity_handle_edges)).astype(int) * (bc_flags[0, 0] )
-            vec3 = np.ones(len(entity_handle_faces)).astype(int) * (bc_flags[0, 0] )
-            vec4 = np.ones(len(entity_handle_volumes)).astype(int) * (bc_flags[0, 0] )
+            # entity_handle_nodes = self.mb.get_entities_by_dimension(bcset, 0)
+            # entity_handle_edges = self.mb.get_entities_by_dimension(bcset, 1)
+            # entity_handle_faces = self.mb.get_entities_by_dimension(bcset, 2)
+            # entity_handle_volumes = self.mb.get_entities_by_dimension(bcset, 3)
+            entity_list = self.range_merge(self.mb.get_entities_by_dimension(bcset, 0),
+                                           self.mb.get_entities_by_dimension(bcset, 1),
+                                           self.mb.get_entities_by_dimension(bcset, 2),
+                                           self.mb.get_entities_by_dimension(bcset, 3))
+
+            print([entity_list, bc_flags[0,0]])
+            vec = np.ones(len(entity_list)).astype(int) * (bc_flags[0, 0])
+            #
+            #
+            # vec1 = np.ones(len(entity_handle_nodes)).astype(int) * (bc_flags[0, 0] )
+            # vec2 = np.ones(len(entity_handle_edges)).astype(int) * (bc_flags[0, 0] )
+            # vec3 = np.ones(len(entity_handle_faces)).astype(int) * (bc_flags[0, 0] )
+            # vec4 = np.ones(len(entity_handle_volumes)).astype(int) * (bc_flags[0, 0] )
             if bc_flags[0, 0] < 100:
-                self.setData("MATERIAL", data=vec1, rangeEl=entity_handle_nodes)
-                self.setData("MATERIAL", data=vec2, rangeEl=entity_handle_edges)
-                self.setData("MATERIAL", data=vec3, rangeEl=entity_handle_faces)
-                self.setData("MATERIAL", data=vec4, rangeEl=entity_handle_volumes)
-            elif (bc_flags[0, 0] < 200) & (bc_flags[0, 0] >= 100):
-                self.setData("DIRICHLET", data=vec1, rangeEl=entity_handle_nodes)
-                self.setData("DIRICHLET", data=vec2, rangeEl=entity_handle_edges)
-                self.setData("DIRICHLET", data=vec3, rangeEl=entity_handle_faces)
-                self.setData("DIRICHLET", data=vec4, rangeEl=entity_handle_volumes)
-            elif (bc_flags[0, 0] < 300) & (bc_flags[0, 0] >= 200):
-                self.setData("NEUMAMN", data=vec1, rangeEl=entity_handle_nodes)
-                self.setData("NEUMAMN", data=vec2, rangeEl=entity_handle_edges)
-                self.setData("NEUMAMN", data=vec3, rangeEl=entity_handle_faces)
-                self.setData("NEUMAMN", data=vec4, rangeEl=entity_handle_volumes)
-            elif (bc_flags[0, 0] >= 300):
-                self.setData("WELLS", data=vec1, rangeEl=entity_handle_nodes)
-                self.setData("WELLS", data=vec2, rangeEl=entity_handle_edges)
-                self.setData("WELLS", data=vec3, rangeEl=entity_handle_faces)
-                self.setData("WELLS", data=vec4, rangeEl=entity_handle_volumes)
+                print("MATERIAL FLAG DE MATERIAL GRAVADO")
+                self.setData("MATERIAL", data=vec, rangeEl=entity_list)
+            elif bc_flags[0, 0] > 100:
+                print("FLAG FLAG DE FLAGL GRAVADO")
+                self.setData("FLAGS", data=vec, rangeEl=entity_list)
 
     def deftagHandle(self,nameTag,dataSize, dataText = "float", dataDensity = "dense"):
          if dataDensity == "dense":
@@ -127,6 +125,28 @@ class CoreMoab:
              rangeEl = self.rangeIndex(indexVec,rangeEl)
          handleTag = self.handleDic[nametag]
          self.mb.tag_set_data(handleTag,rangeEl,data)
+
+    def init_tag(self,nametag,dtype = "int", entityType = 4 ):
+        # initialize a tag
+        # zeros nodes, edges, faces and volumes
+        # by default it zeros all geometric entities
+        if dtype == "int":
+            var_type = int
+        elif dtype == "float":
+            var_type = float
+        elif dtype == "bool":
+            var_type = bool
+        el = [[self.all_nodes], [self.all_edges], [self.all_faces], [self.all_volumes],
+              [self.all_nodes, self.all_edges, self.all_faces, self.all_volumes]]
+        range_temp = self.range_merge(*el[entityType])
+        self.setData(nametag,data = np.zeros(len(range_temp)).astype(var_type),rangeEl = range_temp)
+
+    @staticmethod
+    def range_merge(*args):
+        range_merged = rng.Range()
+        for arg in args:
+            range_merged.merge(arg)
+        return range_merged
 
     def print(self, text = None):
         m1 = self.mb.create_meshset()
