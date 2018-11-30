@@ -21,8 +21,10 @@ class CoreMoab:
         self.read_parallel()
         self.create_parallel_meshset()
         #self.create_flag_tag()
-
-
+        #pdb.set_trace()
+        #print(self.access_handle(self.all_nodes[0]))
+        #pdb.set_trace()
+        #self.create_flag_tag()
 
     def check_integrity(self):
         # check if the mesh contains
@@ -104,7 +106,26 @@ class CoreMoab:
         # self.init_tag("MATERIAL")
         # self.init_tag("FLAGS")
 
+    def access_meshset(self, handle):
+        # returns the entities contained inside a give meshset handle
+        # ie: for a meshset handle the entities inside are returned
+        temp_range = []
+        for el in range(self.dimension+1):
+            subel = (self.mb.get_entities_by_dimension(handle, el))
+            temp_range.append(subel)
+        temp_range.append(self.mb.get_entities_by_dimension(handle, 11))
+        return temp_range
 
+    def access_handle(self,handle):
+        # returns the entities contained inside a give handle
+        # ie: for a volume, the faces, for a face the edges and
+        #     for an edge the points.
+        # to be improved - > check issues with the range class
+        flag = 0
+        tmp = []
+        for el in range(3):
+            tmp.append(self.mb.get_adjacencies(handle, el))
+        return tmp
 
     def create_flag_tag(self):
         print("Creating Flag Tag")
@@ -201,7 +222,7 @@ class CoreMoab:
     def range_merge(*args):
         range_merged = rng.Range()
         for arg in args:
-            range_merged.merge(arg)
+                range_merged.merge(arg)
         return range_merged
 
     def print(self, text = None):
