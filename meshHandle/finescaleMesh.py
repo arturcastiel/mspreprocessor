@@ -17,7 +17,6 @@ class FineScaleMesh:
         self.macroDim()
         self.init_ID()
         #self.init_BC()
-
         # Iniciar condições de contorno
         self.dirichlet_faces = set()
         self.neumann_faces = set()

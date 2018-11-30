@@ -15,6 +15,7 @@ import pdb
 M = msh("semi.msh")
 
 # M.core.readData("DIRICHLET", rangeEl = M.core.all_nodes)
-
-pdb.set_trace()
+#pdb.set_trace()
+# print(M.core.access_meshset(0))
+# print(M.core.mb.get_entities_by_handle(0))
 M.core.print()

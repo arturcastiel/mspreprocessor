@@ -18,13 +18,12 @@ class CoreMoab:
         self.handleDic = {}
         self.flag_dic = {}
         self.read_flags()
-        self.read_parallel()
-        self.create_parallel_meshset()
-        #self.create_flag_tag()
-        #pdb.set_trace()
-        #print(self.access_handle(self.all_nodes[0]))
-        #pdb.set_trace()
-        #self.create_flag_tag()
+        self.create_flag_visualization()
+
+        # swtich on/off
+        self.parallel_meshset = self.create_parallel_meshset()
+        self.create_parallel_visualization()
+
 
     def check_integrity(self):
         # check if the mesh contains
@@ -63,28 +62,14 @@ class CoreMoab:
                 partition_volumes.append(list_entity)
         return partition_volumes
 
-
-
-    def read_parallel(self):
-        try:
-            parallel_tag = self.mb.tag_get_handle("PARALLEL_PARTITION")
-            flag = False
-        except:
-            print("Parallel Partition Tag not found \nMesh initialized with no parallel partition")
-            flag = True
-        if not flag:
-            print("Parallel Partition Tag detected \nMesh initialized with a parallel partition")
-            self.handleDic["PARALLEL_PARTITION"] = parallel_tag
-            parallel_sets = self.mb.get_entities_by_type_and_tag(
-                0, types.MBENTITYSET, np.array(
-                (parallel_tag,)), np.array((None,)))
-            self.deftagHandle("PARALLEL",dataSize=1,dataText="int")
-            for set in parallel_sets:
-                num_tag = self.readData("PARALLEL_PARTITION", rangeEl = set)
-                entities = self.mb.get_entities_by_dimension(set, 3)
-                # print([num_tag, entities])
-                vec = np.ones(len(entities)).astype(int) * num_tag[0,0]
-                self.setData("PARALLEL",data = vec,rangeEl=entities)
+    def create_parallel_visualization(self):
+        k = 0
+        for sets in self.parallel_meshset:
+            for dim in sets:
+                if len(dim) != 0:
+                    self.setData("PARALLEL", k * np.ones(len(dim)).astype(int), rangeEl=dim)
+            k += 1
+    # obsolete
 
     def read_flags(self):
         physical_tag = self.mb.tag_get_handle("MATERIAL_SET")
@@ -100,11 +85,18 @@ class CoreMoab:
                          self.mb.get_entities_by_dimension(set,2), self.mb.get_entities_by_dimension(set,3)]
             self.flag_dic[bc_flag] = list_entity
         self.flag_list = flag_list.sort(axis=0)
-        # self.handleDic["MATERIAL_SET"] = physical_tag
-        # self.deftagHandle("FLAGS", 1, dataText="int",dataDensity="sparse")
-        # self.deftagHandle("MATERIAL", 1, dataText="int",dataDensity="sparse")
-        # self.init_tag("MATERIAL")
-        # self.init_tag("FLAGS")
+
+    def create_flag_visualization(self):
+        self.deftagHandle("FLAGS", 1, dataText="int")
+        self.deftagHandle("MATERIAL", 1, dataText="int")
+        for k in self.flag_dic:
+            sets = self.flag_dic[k]
+            for dim in sets:
+                if len(dim) != 0:
+                    if k > 100:
+                        self.setData("FLAGS", k * np.ones(len(dim)).astype(int), rangeEl=dim)
+                    else:
+                        self.setData("MATERIAL", k * np.ones(len(dim)).astype(int), rangeEl=dim)
 
     def access_meshset(self, handle):
         # returns the entities contained inside a give meshset handle
@@ -127,52 +119,28 @@ class CoreMoab:
             tmp.append(self.mb.get_adjacencies(handle, el))
         return tmp
 
-    def create_flag_tag(self):
-        print("Creating Flag Tag")
-        physical_tag = self.mb.tag_get_handle("MATERIAL_SET")
-        physical_sets = self.mb.get_entities_by_type_and_tag(
-            0, types.MBENTITYSET, np.array(
-            (physical_tag,)), np.array((None,)))
-        self.handleDic["MATERIAL_SET"] = physical_tag
-        self.deftagHandle("FLAGS", 1, dataText="int")
-        self.deftagHandle("MATERIAL", 1, dataText="int")
-        #self.init_tag("MATERIAL")
-        self.init_tag("FLAGS")
-        for bcset in physical_sets:
-            bc_flags = self.readData("MATERIAL_SET", rangeEl=bcset)
-            entity_list = self.range_merge(self.mb.get_entities_by_dimension(bcset, 0),
-                                           self.mb.get_entities_by_dimension(bcset, 1),
-                                           self.mb.get_entities_by_dimension(bcset, 2),
-                                           self.mb.get_entities_by_dimension(bcset, 3))
-            print([entity_list, bc_flags[0,0]])
-            vec = np.ones(len(entity_list)).astype(int) * (bc_flags[0, 0])
-            if bc_flags[0, 0] < 100:
-                print("MATERIAL FLAG DE MATERIAL GRAVADO")
-                self.setData("MATERIAL", data=vec, rangeEl=entity_list)
-            elif bc_flags[0, 0] > 100:
-                print("FLAG FLAG DE FLAGL GRAVADO")
-                self.setData("FLAGS", data=vec, rangeEl=entity_list)
+
 
     def deftagHandle(self,nameTag,dataSize, dataText = "float", dataDensity = "dense"):
-         if dataDensity == "dense":
-             dataDensity = types.MB_TAG_DENSE
-         elif dataDensity == "sparse":
-             dataDensity = types.MB_TAG_SPARSE
-         elif dataDensity == "bit":
-             dataDensity = types.MB_TAG_BIT
-         else:
-             print("Please define a valid tag type")
-         if dataText == 'float':
-             dataType = types.MB_TYPE_DOUBLE
-         elif dataText == "int":
-             dataType = types.MB_TYPE_INTEGER
-         elif dataText == "bool":
-             dataType == types.MB_TYPE_BIT
-         try:
-             handle = self.handleDic[nameTag]
-         except KeyError:
-             handle = self.mb.tag_get_handle(nameTag, dataSize, dataType, dataDensity, True)
-             self.handleDic[nameTag] = handle
+        if dataDensity == "dense":
+            dataDensity = types.MB_TAG_DENSE
+        elif dataDensity == "sparse":
+            dataDensity = types.MB_TAG_SPARSE
+        elif dataDensity == "bit":
+            dataDensity = types.MB_TAG_BIT
+        else:
+            print("Please define a valid tag type")
+        if dataText == 'float':
+            dataType = types.MB_TYPE_DOUBLE
+        elif dataText == "int":
+            dataType = types.MB_TYPE_INTEGER
+        elif dataText == "bool":
+            dataType == types.MB_TYPE_BIT
+        try:
+            handle = self.handleDic[nameTag]
+        except KeyError:
+            handle = self.mb.tag_get_handle(nameTag, dataSize, dataType, dataDensity, True)
+            self.handleDic[nameTag] = handle
 
     def readData(self, nametag, indexVec = np.array([]), rangeEl = None):
          if rangeEl == None:
