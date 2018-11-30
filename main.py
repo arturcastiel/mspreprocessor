@@ -3,6 +3,9 @@ import numpy as np
 from meshHandle.multiscaleMesh import FineScaleMeshMS as msh
 import pdb
 
+from math import pi, sqrt
+from pymoab import core, types, rng, topo_util
+
 
 #docker run -t -it -v  /home/arturcastiel/projetos:/pytest desenvolvimento:latest bash -c "cd /pytest; bash"
 
@@ -19,3 +22,10 @@ M = msh("semi.msh")
 # print(M.core.access_meshset(0))
 # print(M.core.mb.get_entities_by_handle(0))
 M.core.print()
+cumaru = M.core.mb.tag_get_handle("GEOM_DIMENSION")
+M.core.handleDic["GEOM_DIMENSION"] = cumaru
+
+
+loook = M.core.mb.get_entities_by_type_and_tag(
+    0, types.MBENTITYSET, np.array(
+        (cumaru,)), np.array((None,)))

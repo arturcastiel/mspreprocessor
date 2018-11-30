@@ -1,4 +1,5 @@
 from pymoab import core, types, rng, topo_util
+from pymoab import skinner as sk
 import numpy as np
 import pdb
 
@@ -20,10 +21,28 @@ class CoreMoab:
         self.read_flags()
         self.create_flag_visualization()
 
+        # self.skinner_test()
+
         # swtich on/off
         self.parallel_meshset = self.create_parallel_meshset()
         self.create_parallel_visualization()
 
+
+    def skinner_test(self):
+        teste = sk.Skinner(self.mb)
+
+
+        ol = teste.find_geometric_skin( self.mb.get_root_set())
+
+        # o = teste.find_skin( self.mb.get_root_set() ,self.all_faces, True,False)
+        # try:
+        #     ol = teste.find_geometric_skin(0)
+        # except:
+        #     print("DEU MERDA CARALHO")
+
+        print(ol)
+        print(o)
+        pdb.set_trace()
 
     def check_integrity(self):
         # check if the mesh contains

@@ -13,7 +13,6 @@ class FineScaleMesh:
         self.init_Center()
         self.init_Volume()
         self.init_Normal()
-
         self.macroDim()
         self.init_ID()
         #self.init_BC()

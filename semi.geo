@@ -56,7 +56,7 @@ Physical Surface(201) = {1,2,3};
 Physical Surface(202) = {4,5,6};
 
 Physical Point(101) = {1, 2, 3, 4};
-Physical Point(202) = {5,6};
+Physical Point(202) = {5,6,7,8};
 Physical Volume(1) = {1};
 
 
