@@ -64,7 +64,7 @@ class CoreMoab:
 
         #ol = teste.find_geometric_skin( self.mb.get_root_set())
 
-        vertex_on_skin_handles = skin.find_skin( self.mb.get_root_set() ,self.all_volumes, True,False)
+        vertex_on_skin_handles = skin.find_skin( self.mb.get_root_set() ,self.all_volumes, True,True)
 
         vertex_ids = self.readData("GLOBAL_ID", rangeEl = vertex_on_skin_handles)
 
