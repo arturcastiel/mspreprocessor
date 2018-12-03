@@ -14,7 +14,7 @@ class FineScaleMesh:
         self.init_Volume()
         self.init_Normal()
         self.macroDim()
-        self.init_ID()
+
         #self.init_BC()
         # Iniciar condições de contorno
         self.dirichlet_faces = set()
@@ -132,22 +132,6 @@ class FineScaleMesh:
         print(neumamn_tag)
 
 
-    def init_ID(self):
-        # delete previous IDs
-        # Gmesh standard counts from 1
-        GLOBAL_ID_tag = self.core.mb.tag_get_handle(
-            "Global_ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, True)
-        self.core.mb.tag_delete(GLOBAL_ID_tag)
-
-        self.core.deftagHandle("GLOBAL_ID",1, dataText = 'int')
-        #create volume ids
-        self.core.setData("GLOBAL_ID", np.arange(len(self.core.all_volumes)))
-        #create face ids
-        self.core.setData("GLOBAL_ID", np.arange(len(self.core.all_faces)),rangeEl = self.core.all_faces)
-        #create edges ids
-        self.core.setData("GLOBAL_ID", np.arange(len(self.core.all_edges)),rangeEl = self.core.all_edges)
-        #create nodes ids
-        self.core.setData("GLOBAL_ID", np.arange(len(self.core.all_nodes)),rangeEl = self.core.all_nodes)
 
     def init_Center(self):
         self.core.deftagHandle('CENTER',3)

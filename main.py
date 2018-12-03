@@ -22,8 +22,23 @@ M = msh("semi.msh")
 # print(M.core.access_meshset(0))
 # print(M.core.mb.get_entities_by_handle(0))
 M.core.print()
+
+print(M.core.readData("GLOBAL_ID", rangeEl = M.core.all_faces))
+
+print(M.core.readData("GLOBAL_ID", rangeEl = M.core.all_edges))
+
+print(M.core.readData("GLOBAL_ID", rangeEl = M.core.all_nodes))
+
+print(M.core.readData("GLOBAL_ID", rangeEl = M.core.all_volumes))
+
+
+
+
+
 cumaru = M.core.mb.tag_get_handle("GEOM_DIMENSION")
 M.core.handleDic["GEOM_DIMENSION"] = cumaru
+
+
 
 
 loook = M.core.mb.get_entities_by_type_and_tag(

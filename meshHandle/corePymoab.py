@@ -15,33 +15,61 @@ class CoreMoab:
         self.mtu.construct_aentities(self.all_nodes)
         self.all_faces = self.mb.get_entities_by_dimension(0, self.dimension-1)
         self.all_edges = self.mb.get_entities_by_dimension(0, self.dimension-2)
-        self.check_integrity()
+
         self.handleDic = {}
+
+
+        self.init_id()
+        self.check_integrity()
+
         self.flag_dic = {}
         self.read_flags()
         self.create_flag_visualization()
 
-        # self.skinner_test()
+        self.skinner_test()
 
         # swtich on/off
         self.parallel_meshset = self.create_parallel_meshset()
         self.create_parallel_visualization()
 
 
+    def __show_edges_matrix(self):
+        tmp_matrix = np.zeros((len(self.all_edges),2))
+        for el,index in zip(self.all_edges, range(len(self.all_edges))):
+            tmp_matrix[index] = self.mb.get_adjacencies(el,0)
+        return tmp_matrix
+
+    def init_id(self):
+        # delete previous IDs
+        # Gmesh standard counts from 1
+        # GLOBAL_ID_tag = self.mb.tag_get_handle(
+        #    "Global_ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, False)
+
+        GLOBAL_ID_tag = self.mb.tag_get_handle(
+            "GLOBAL_ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, False)
+
+        self.handleDic["GLOBAL_ID"] = GLOBAL_ID_tag
+        # create volume ids
+        self.setData("GLOBAL_ID", np.arange(len(self.all_volumes)))
+        # create face ids
+        self.setData("GLOBAL_ID", np.arange(len(self.all_faces)),rangeEl = self.all_faces)
+        # create edges ids
+        self.setData("GLOBAL_ID", np.arange(len(self.all_edges)),rangeEl = self.all_edges)
+        # create nodes ids
+        self.setData("GLOBAL_ID", np.arange(len(self.all_nodes)),rangeEl = self.all_nodes)
+
     def skinner_test(self):
-        teste = sk.Skinner(self.mb)
+        skin = sk.Skinner(self.mb)
+        print("Entering skinner test")
 
+        #ol = teste.find_geometric_skin( self.mb.get_root_set())
 
-        ol = teste.find_geometric_skin( self.mb.get_root_set())
+        vertex_on_skin_handles = skin.find_skin( self.mb.get_root_set() ,self.all_volumes, True,False)
 
-        # o = teste.find_skin( self.mb.get_root_set() ,self.all_faces, True,False)
-        # try:
-        #     ol = teste.find_geometric_skin(0)
-        # except:
-        #     print("DEU MERDA CARALHO")
+        vertex_ids = self.readData("GLOBAL_ID", rangeEl = vertex_on_skin_handles)
 
-        print(ol)
-        print(o)
+        self.deftagHandle("BUNDA",1, "int")
+        self.setData("BUNDA", vertex_ids, rangeEl = vertex_on_skin_handles)
         pdb.set_trace()
 
     def check_integrity(self):
@@ -88,7 +116,6 @@ class CoreMoab:
                 if len(dim) != 0:
                     self.setData("PARALLEL", k * np.ones(len(dim)).astype(int), rangeEl=dim)
             k += 1
-    # obsolete
 
     def read_flags(self):
         physical_tag = self.mb.tag_get_handle("MATERIAL_SET")
@@ -137,8 +164,6 @@ class CoreMoab:
         for el in range(3):
             tmp.append(self.mb.get_adjacencies(handle, el))
         return tmp
-
-
 
     def deftagHandle(self,nameTag,dataSize, dataText = "float", dataDensity = "dense"):
         if dataDensity == "dense":
