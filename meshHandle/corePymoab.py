@@ -94,7 +94,7 @@ class CoreMoab:
         # vertex_ids = self.readData("GLOBAL_ID", rangeEl = vertex_on_skin_handles)
         pdb.set_trace()
 
-        self.deftagHandle("SKINPOINT",1, "int")
+        self.deftagHandle("SKINPOINT",1, "int", dataDensity="sparse")
         self.setData("SKINPOINT", 200*np.ones(len(vertex_on_skin_handles)).astype(int), rangeEl = vertex_on_skin_handles)
 
 
