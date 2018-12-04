@@ -21,13 +21,14 @@ class CoreMoab:
 
         self.init_id()
         self.check_integrity()
-
+        self.create_id_visualization()
         self.flag_dic = {}
         self.read_flags()
+
+        self.create_flag_visualization()
         self.create_flag_visualization()
 
         self.skinner_test()
-
         # swtich on/off
         self.parallel_meshset = self.create_parallel_meshset()
         self.create_parallel_visualization()
@@ -70,7 +71,7 @@ class CoreMoab:
 
         self.deftagHandle("BUNDA",1, "int")
         self.setData("BUNDA", vertex_ids, rangeEl = vertex_on_skin_handles)
-        pdb.set_trace()
+
 
     def check_integrity(self):
         # check if the mesh contains
@@ -143,6 +144,51 @@ class CoreMoab:
                         self.setData("FLAGS", k * np.ones(len(dim)).astype(int), rangeEl=dim)
                     else:
                         self.setData("MATERIAL", k * np.ones(len(dim)).astype(int), rangeEl=dim)
+
+    def create_flag_visualization_alternative(self):
+        self.deftagHandle("FLAGS-NODES", 1, dataText="int")
+        self.deftagHandle("FLAGS-EDGES", 1, dataText="int")
+        self.deftagHandle("FLAGS-FACES", 1, dataText="int")
+        self.deftagHandle("FLAGS-VOUMES", 1, dataText="int")
+        for k in self.flag_dic:
+            sets = self.flag_dic[k]
+            for dim, ndim in zip(sets,range(4)):
+
+                if len(dim) != 0:
+                    print([k, ndim])
+                    if k > 100:
+                        if ndim == 0:
+                            # print([dim, k])
+                            self.setData("FLAGS-NODES", k * np.ones(len(dim)).astype(int), rangeEl=dim)
+                        elif ndim == 1:
+                            # print([dim, k])
+                            self.setData("FLAGS-EDGES", k * np.ones(len(dim)).astype(int), rangeEl=dim)
+                        elif ndim ==2:
+                            # print([dim, k])
+                            self.setData("FLAGS-FACES", k * np.ones(len(dim)).astype(int), rangeEl=dim)
+                        elif ndim == 3:
+                            # print([dim, k])
+                            self.setData("FLAGS-VOLUMES", k * np.ones(len(dim)).astype(int), rangeEl=dim)
+                    else:
+                        # self.setData("MATERIAL", k * np.ones(len(dim)).astype(int), rangeEl=dim)
+                        pass
+
+    def create_id_visualization(self):
+        self.deftagHandle("ID-NODES", 1, dataText="int")
+        self.deftagHandle("ID-EDGES", 1, dataText="int")
+        self.deftagHandle("ID-FACES", 1, dataText="int")
+        self.deftagHandle("ID-VOLUMES", 1, dataText="int")
+
+        data_node = self.readData("GLOBAL_ID", rangeEl=self.all_nodes)
+        data_edges = self.readData("GLOBAL_ID", rangeEl=self.all_edges)
+        data_faces= self.readData("GLOBAL_ID", rangeEl=self.all_faces)
+        data_volumes = self.readData("GLOBAL_ID", rangeEl=self.all_volumes)
+
+        self.setData("ID-NODES", data_node, rangeEl=self.all_nodes)
+        self.setData("ID-EDGES", data_edges, rangeEl=self.all_edges)
+        self.setData("ID-FACES", data_faces, rangeEl=self.all_faces)
+        self.setData("ID-VOLUMES", data_volumes, rangeEl=self.all_volumes)
+
 
     def access_meshset(self, handle):
         # returns the entities contained inside a give meshset handle
@@ -230,6 +276,28 @@ class CoreMoab:
         range_temp = self.range_merge(*el[entityType])
         self.setData(nametag,data = np.zeros(len(range_temp)).astype(var_type),rangeEl = range_temp)
 
+    def check_handle_dimension(self,handle,*args):
+        # INPUT: handle or range
+        # OUTPUT: handles in the range of the dimension in args
+
+        handle_int = np.asarray(handle).astype("uint64")
+        type_list =np.array([self.mb.type_from_handle(el) for el in  handle_int])
+        handle_classification = np.zeros(len(handle))
+        nodetype = type_list == types.MBVERTEX
+        edgetype = type_list == types.MBEDGE
+        facetype = (type_list == types.MBTRI) | (type_list == types.MBQUAD) | (type_list == types.MBPOLYGON)
+        volumetype =  (type_list == types.MBTET) | (type_list == types.MBPYRAMID) | (type_list == types.MBPRISM) | \
+                      (type_list == types.MBKNIFE) | (type_list == types.MBHEX) | (type_list == types.MBPOLYHEDRON)
+        meshsettype =  type_list ==  types.MBENTITYSET
+        handle_classification[nodetype] = 0
+        handle_classification[edgetype] = 1
+        handle_classification[facetype] = 2
+        handle_classification[volumetype] = 3
+        handle_classification[meshsettype] = 4
+        test_elem = np.array([*args])
+        return rng.Range(handle_int[np.isin(handle_classification,test_elem)])
+
+
     @staticmethod
     def range_merge(*args):
         range_merged = rng.Range()
@@ -254,6 +322,7 @@ class CoreMoab:
         text3 = text + "-volume" + extension
         text4 = text + "-edges" + extension
         text5 = text + "-all" + extension
+        text6 = text + "-together" + extension
         self.mb.write_file(text1,[m1])
         self.mb.write_file(text2,[m2])
         self.mb.write_file(text3,[m3])

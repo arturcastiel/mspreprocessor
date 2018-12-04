@@ -23,13 +23,19 @@ M = msh("semi.msh")
 # print(M.core.mb.get_entities_by_handle(0))
 M.core.print()
 
-print(M.core.readData("GLOBAL_ID", rangeEl = M.core.all_faces))
+#M.core.check_handle_dimension(M.core.all_volumes)
 
-print(M.core.readData("GLOBAL_ID", rangeEl = M.core.all_edges))
+p = M.core.range_merge(M.core.all_edges, M.core.all_faces, M.core.all_volumes, M.core.all_nodes)
+print(M.core.check_handle_dimension(p,1,2))
 
-print(M.core.readData("GLOBAL_ID", rangeEl = M.core.all_nodes))
 
-print(M.core.readData("GLOBAL_ID", rangeEl = M.core.all_volumes))
+# print(M.core.readData("GLOBAL_ID", rangeEl = M.core.all_faces))
+#
+# print(M.core.readData("GLOBAL_ID", rangeEl = M.core.all_edges))
+#
+# print(M.core.readData("GLOBAL_ID", rangeEl = M.core.all_nodes))
+#
+# print(M.core.readData("GLOBAL_ID", rangeEl = M.core.all_volumes))
 
 
 
