@@ -10,13 +10,24 @@ class CoreMoab:
         self.root_set = self.mb.get_root_set()
         self.mtu = topo_util.MeshTopoUtil(self.mb)
         self.mb.load_file(mesh_file)
+
+
+
+
         self.all_volumes = self.mb.get_entities_by_dimension(0, self.dimension)
         self.all_nodes = self.mb.get_entities_by_dimension(0, 0)
+
+
+
+
         self.mtu.construct_aentities(self.all_nodes)
         self.all_faces = self.mb.get_entities_by_dimension(0, self.dimension-1)
         self.all_edges = self.mb.get_entities_by_dimension(0, self.dimension-2)
 
         self.handleDic = {}
+
+        self.skinner_test()
+
 
 
         self.init_id()
@@ -28,7 +39,6 @@ class CoreMoab:
         self.create_flag_visualization()
         self.create_flag_visualization()
 
-        self.skinner_test()
         # swtich on/off
         self.parallel_meshset = self.create_parallel_meshset()
         self.create_parallel_visualization()
@@ -63,14 +73,29 @@ class CoreMoab:
         skin = sk.Skinner(self.mb)
         print("Entering skinner test")
 
+        # geo_tag = self.mb.tag_get_handle("GEOM_DIMENSION")
+        # self.handleDic["GEOM_DIMENSION"] = geo_tag
+        # self.setData("GEOM_DIMENSION", np.arange(len(self.all_volumes)))
+        # # # create face ids
+        # self.setData("GEOM_DIMENSION", np.arange(len(self.all_faces)),rangeEl = self.all_faces)
+        # # # create edges ids
+        # self.setData("GEOM_DIMENSION", np.arange(len(self.all_edges)),rangeEl = self.all_edges)
+        # # create nodes ids
+        # self.setData("GEOM_DIMENSION", np.arange(len(self.all_nodes)),rangeEl = self.all_nodes)
+
+        flag = False
         #ol = teste.find_geometric_skin( self.mb.get_root_set())
 
-        vertex_on_skin_handles = skin.find_skin( self.mb.get_root_set() ,self.all_volumes, True,True)
+        #vertex_on_skin_handles2 = skin.find_geometric_skin(self.mb.get_root_set(),exceptions =((16)))
 
-        vertex_ids = self.readData("GLOBAL_ID", rangeEl = vertex_on_skin_handles)
+        vertex_on_skin_handles = skin.find_skin( self.mb.get_root_set(), self.all_volumes[:]) #, True,False)
+        print(vertex_on_skin_handles)
 
-        self.deftagHandle("BUNDA",1, "int")
-        self.setData("BUNDA", vertex_ids, rangeEl = vertex_on_skin_handles)
+        # vertex_ids = self.readData("GLOBAL_ID", rangeEl = vertex_on_skin_handles)
+        pdb.set_trace()
+
+        self.deftagHandle("SKINPOINT",1, "int")
+        self.setData("SKINPOINT", 200*np.ones(len(vertex_on_skin_handles)).astype(int), rangeEl = vertex_on_skin_handles)
 
 
     def check_integrity(self):
@@ -279,7 +304,7 @@ class CoreMoab:
     def check_handle_dimension(self,handle,*args):
         # INPUT: handle or range
         # OUTPUT: handles in the range of the dimension in args
-
+        # 0 - nodes , 1 -edges, 2 - faces 3 - volumes, 4- meshset
         handle_int = np.asarray(handle).astype("uint64")
         type_list =np.array([self.mb.type_from_handle(el) for el in  handle_int])
         handle_classification = np.zeros(len(handle))

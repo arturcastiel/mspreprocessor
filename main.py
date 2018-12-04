@@ -26,7 +26,7 @@ M.core.print()
 #M.core.check_handle_dimension(M.core.all_volumes)
 
 p = M.core.range_merge(M.core.all_edges, M.core.all_faces, M.core.all_volumes, M.core.all_nodes)
-print(M.core.check_handle_dimension(p,1,2))
+print(M.core.check_handle_dimension(p,2,3.4))
 
 
 # print(M.core.readData("GLOBAL_ID", rangeEl = M.core.all_faces))
