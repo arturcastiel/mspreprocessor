@@ -73,17 +73,23 @@ class CoreMoab:
         skin = sk.Skinner(self.mb)
         print("Entering skinner test")
 
-        vertex_on_skin_handles = skin.find_skin( self.mb.get_root_set(), self.all_volumes[:]) #, True,False)
-        print(vertex_on_skin_handles)
+        faces_on_skin_handles = skin.find_skin( self.mb.get_root_set(), self.all_volumes[:]) #, True,False)
+        #print(vertex_on_skin_handles)
 
-        op = self.access_handle(vertex_on_skin_handles)[0]
-        print(op)
+        edges_on_skin_handles = self.access_handle(faces_on_skin_handles)
+
+        nodes_on_skin_handles = self.access_handle(edges_on_skin_handles)
 
         # vertex_ids = self.readData("GLOBAL_ID", rangeEl = vertex_on_skin_handles)
         # pdb.set_trace()
 
         self.deftagHandle("SKINPOINT",1, "int", dataDensity="sparse")
-        self.setData("SKINPOINT", 200*np.ones(len(vertex_on_skin_handles)).astype(int), rangeEl = vertex_on_skin_handles)
+        self.deftagHandle("SKINEDGES", 1, "int", dataDensity="sparse")
+        self.deftagHandle("SKINFACES", 1, "int", dataDensity="sparse")
+
+        self.setData("SKINPOINT", 200 * np.ones(len(nodes_on_skin_handles)).astype(int), rangeEl=nodes_on_skin_handles)
+        self.setData("SKINEDGES", 300 * np.ones(len(edges_on_skin_handles)).astype(int), rangeEl=edges_on_skin_handles)
+        self.setData("SKINFACES", 400 * np.ones(len(faces_on_skin_handles)).astype(int), rangeEl=faces_on_skin_handles)
 
 
     def check_integrity(self):
@@ -202,7 +208,6 @@ class CoreMoab:
         self.setData("ID-FACES", data_faces, rangeEl=self.all_faces)
         self.setData("ID-VOLUMES", data_volumes, rangeEl=self.all_volumes)
 
-
     def access_meshset(self, handle):
         # returns the entities contained inside a give meshset handle
         # ie: for a meshset handle the entities inside are returned
@@ -214,15 +219,14 @@ class CoreMoab:
         return temp_range
 
     def access_handle(self,handle):
-        # returns the entities contained inside a give handle
-        # ie: for a volume, the faces, for a face the edges and
-        #     for an edge the points.
-        # to be improved - > check issues with the range class
-        flag = 0
-        tmp = []
-        for el in range(3):
-            tmp.append(self.mb.get_adjacencies(handle, el))
-        return tmp
+        # input: range of handles of different dimensions
+        # returns all entities with d-1 dimension the comprises the given range
+        # ie: for a volume, the faces, for a face the edges and for an edge the points.
+        #
+        vecdim = self.check_range_by_dimm(handle)
+        all_adj = np.array([np.array(self.mb.get_adjacencies(el_handle, dim-1)) for dim, el_handle in zip(vecdim,handle)])
+        unique_adj = np.unique(np.ma.concatenate(all_adj)).astype("uint64")
+        return rng.Range(unique_adj)
 
     def deftagHandle(self,nameTag,dataSize, dataText = "float", dataDensity = "dense"):
         if dataDensity == "dense":
@@ -307,7 +311,7 @@ class CoreMoab:
         handle_classification[facetype] = 2
         handle_classification[volumetype] = 3
         handle_classification[meshsettype] = 11
-        return handle_classification
+        return handle_classification.astype("uint64")
 
     def filter_range(self,handle, filter_vec):
         # INPUT: handle or range
