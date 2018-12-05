@@ -23,10 +23,26 @@ M = msh("semi.msh")
 # print(M.core.mb.get_entities_by_handle(0))
 M.core.print()
 
-#M.core.check_handle_dimension(M.core.all_volumes)
+vec = np.array([0,1,2,3,4])
+vec2 = np.zeros(len(M.core.all_faces),dtype = bool)
 
+vec2[0] = True
+
+vec2[10] = True
+l = M.core.filter_range(M.core.all_faces, vec2)
+
+print("----------------------------------")
+
+
+#M.core.check_handle_dimension(M.core.all_volumes)
+#
 p = M.core.range_merge(M.core.all_edges, M.core.all_faces, M.core.all_volumes, M.core.all_nodes)
-print(M.core.check_handle_dimension(p,2,3.4))
+
+print(p)
+
+print("----------------------------------")
+
+print(M.core.filter_handle_by_dimension(p,0,2,3))
 
 
 # print(M.core.readData("GLOBAL_ID", rangeEl = M.core.all_faces))
@@ -41,12 +57,14 @@ print(M.core.check_handle_dimension(p,2,3.4))
 
 
 
-cumaru = M.core.mb.tag_get_handle("GEOM_DIMENSION")
-M.core.handleDic["GEOM_DIMENSION"] = cumaru
 
 
-
-
-loook = M.core.mb.get_entities_by_type_and_tag(
-    0, types.MBENTITYSET, np.array(
-        (cumaru,)), np.array((None,)))
+# cumaru = M.core.mb.tag_get_handle("GEOM_DIMENSION")
+# M.core.handleDic["GEOM_DIMENSION"] = cumaru
+#
+#
+#
+#
+# loook = M.core.mb.get_entities_by_type_and_tag(
+#     0, types.MBENTITYSET, np.array(
+#         (cumaru,)), np.array((None,)))

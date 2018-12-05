@@ -73,26 +73,14 @@ class CoreMoab:
         skin = sk.Skinner(self.mb)
         print("Entering skinner test")
 
-        # geo_tag = self.mb.tag_get_handle("GEOM_DIMENSION")
-        # self.handleDic["GEOM_DIMENSION"] = geo_tag
-        # self.setData("GEOM_DIMENSION", np.arange(len(self.all_volumes)))
-        # # # create face ids
-        # self.setData("GEOM_DIMENSION", np.arange(len(self.all_faces)),rangeEl = self.all_faces)
-        # # # create edges ids
-        # self.setData("GEOM_DIMENSION", np.arange(len(self.all_edges)),rangeEl = self.all_edges)
-        # # create nodes ids
-        # self.setData("GEOM_DIMENSION", np.arange(len(self.all_nodes)),rangeEl = self.all_nodes)
-
-        flag = False
-        #ol = teste.find_geometric_skin( self.mb.get_root_set())
-
-        #vertex_on_skin_handles2 = skin.find_geometric_skin(self.mb.get_root_set(),exceptions =((16)))
-
         vertex_on_skin_handles = skin.find_skin( self.mb.get_root_set(), self.all_volumes[:]) #, True,False)
         print(vertex_on_skin_handles)
 
+        op = self.access_handle(vertex_on_skin_handles)[0]
+        print(op)
+
         # vertex_ids = self.readData("GLOBAL_ID", rangeEl = vertex_on_skin_handles)
-        pdb.set_trace()
+        # pdb.set_trace()
 
         self.deftagHandle("SKINPOINT",1, "int", dataDensity="sparse")
         self.setData("SKINPOINT", 200*np.ones(len(vertex_on_skin_handles)).astype(int), rangeEl = vertex_on_skin_handles)
@@ -301,9 +289,9 @@ class CoreMoab:
         range_temp = self.range_merge(*el[entityType])
         self.setData(nametag,data = np.zeros(len(range_temp)).astype(var_type),rangeEl = range_temp)
 
-    def check_handle_dimension(self,handle,*args):
+    def check_range_by_dimm(self,handle):
         # INPUT: handle or range
-        # OUTPUT: handles in the range of the dimension in args
+        # OUTPUT: a vector with the same size as the input handle with the following classification
         # 0 - nodes , 1 -edges, 2 - faces 3 - volumes, 4- meshset
         handle_int = np.asarray(handle).astype("uint64")
         type_list =np.array([self.mb.type_from_handle(el) for el in  handle_int])
@@ -318,10 +306,27 @@ class CoreMoab:
         handle_classification[edgetype] = 1
         handle_classification[facetype] = 2
         handle_classification[volumetype] = 3
-        handle_classification[meshsettype] = 4
-        test_elem = np.array([*args])
-        return rng.Range(handle_int[np.isin(handle_classification,test_elem)])
+        handle_classification[meshsettype] = 11
+        return handle_classification
 
+    def filter_range(self,handle, filter_vec):
+        # INPUT: handle or range
+        # OUTPUT: handles in the range of the dimension in args
+        # 0 - nodes , 1 -edges, 2 - faces 3 - volumes, 4- meshset
+        handle_int = np.asarray(handle).astype("uint64")
+        if filter_vec.dtype == bool:
+            return rng.Range(handle_int[filter_vec])
+        else:
+            return rng.Range(handle_int[filter_vec.astype("uint64")])
+
+    def filter_handle_by_dimension(self,handle,*args):
+        # INPUT: handle or range
+        # OUTPUT: handles in the range of the dimension in args
+        # 0 - nodes , 1 -edges, 2 - faces 3 - volumes, 4- meshset
+        handle_int = np.asarray(handle).astype("uint64")
+        vec_classification = self.check_range_by_dimm(handle)
+        test_elem = np.array([*args])
+        return rng.Range(handle_int[np.isin(vec_classification,test_elem)])
 
     @staticmethod
     def range_merge(*args):
