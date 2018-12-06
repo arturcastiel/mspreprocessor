@@ -6,7 +6,9 @@ from math import pi, sqrt
 from pymoab import core, types, rng, topo_util
 from . corePymoab import CoreMoab
 
-print('STANDARD FINESCALE MESH - NO MULTISCALE')
+print('Initializing Finescale Mesh for general purpose')
+
+
 class FineScaleMesh:
     def __init__(self,mesh_file, dim=3):
         self.core = CoreMoab(mesh_file)
