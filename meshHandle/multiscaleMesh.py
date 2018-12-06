@@ -11,68 +11,31 @@ from math import pi, sqrt
 from pymoab import core, types, rng, topo_util
 
 
-print('FINESCALE WITH MULTISCALE')
+print('Initializing Finescale Mesh for Multiscale Methods')
 class FineScaleMeshMS(FineScaleMesh):
     def __init__(self,mesh_file, dim=3):
         super().__init__(mesh_file,dim)
 
-        self.initPartition()
-        # self.dimension = dim
-        # self.mb = core.Core()
-        # self.root_set = self.mb.get_root_set()
-        # self.mtu = topo_util.MeshTopoUtil(self.mb)
-        # self.mb.load_file(mesh_file)
-        #
-        # # self.tagDic- dicionário de tag
-        # # input: string do tag
-        # # output: pymoab Tag
+        self.init_partition()
 
+    def init_partition(self):
+        config = self.read_config()
+        particionador_type = config.get("Particionador","algoritmo")
+        print(particionador_type)
+        if particionador_type != '0':
+            name_function = "scheme" + particionador_type
+            key = "Coarsening_" + particionador_type + "_Input"
+            specific_attributes = config.items(key)
+            used_attributes = []
+            for at in specific_attributes:
+                used_attributes.append(float(at[1]))
+            part_tag = getattr(msCoarseningLib.algoritmo, name_function)(self.core.read_data("CENTER"),
+                       len(self.core.all_volumes), self.rx, self.ry, self.rz,*used_attributes)
+            self.core.create_tag_handle("PARTITION", 1, data_text="int")
+            self.core.set_data("PARTITION",part_tag[0])
 
-        # self.handleDic = {}
-        # self.physical_tag = self.mb.tag_get_handle("MATERIAL_SET")
-        # self.handleDic['MATERIAL_SET'] = self.physical_tag
-        # self.physical_sets = self.mb.get_entities_by_type_and_tag(
-        #     0, types.MBENTITYSET, np.array(
-        #     (self.physical_tag,)), np.array((None,)))
-        # self.dirichlet_tag = self.mb.tag_get_handle(
-        #     "Dirichlet", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
-        # self.neumann_tag = self.mb.tag_get_handle(
-        #     "Neumann", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
-        # self.perm_tag = self.mb.tag_get_handle(
-        #     "Permeability", 9, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
-        # self.source_tag = self.mb.tag_get_handle(
-        #     "Source term", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
-        # self.all_volumes = self.mb.get_entities_by_dimension(0, self.dimension)
-        # self.all_nodes = self.mb.get_entities_by_dimension(0, 0)
-        # self.mtu.construct_aentities(self.all_nodes)
-        # self.all_faces = self.mb.get_entities_by_dimension(0, self.dimension-1)
-        # self.all_edges = self.mb.get_entities_by_dimension(0, self.dimension-2)
-        # self.init_Center()
-        # self.init_Volume()
-        # self.init_Normal()
-        # self.macroDim()
-        # self.dirichlet_faces = set()
-        # self.neumann_faces = set()
-
-
-    def initPartition(self):
-        config = self.readConfig()
-        particionadorType = config.get("Particionador","algoritmo")
-        print(particionadorType)
-        if particionadorType != '0':
-            nameFunction = "scheme" + particionadorType
-            key = "Coarsening_" + particionadorType + "_Input"
-            specificAttributes = config.items(key)
-            usedAttributes = []
-            for at in specificAttributes:
-                usedAttributes.append(float(at[1]))
-            partTag = getattr(msCoarseningLib.algoritmo, nameFunction)(self.core.readData("CENTER"),
-                            len(self.core.all_volumes), self.rx, self.ry, self.rz,*usedAttributes)
-            self.core.deftagHandle("PARTITION", 1, dataText="int")
-            self.core.setData("PARTITION",partTag[0])
-
-    def readConfig(self,configInput="msCoarse.ini"):
-        configFile = cp.ConfigParser()
-        configFile.read(configInput)
-        return configFile
+    def read_config(self, config_input="msCoarse.ini"):
+        config_file = cp.ConfigParser()
+        config_file.read(config_input)
+        return config_file
 

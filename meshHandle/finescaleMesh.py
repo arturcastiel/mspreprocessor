@@ -10,17 +10,17 @@ print('STANDARD FINESCALE MESH - NO MULTISCALE')
 class FineScaleMesh:
     def __init__(self,mesh_file, dim=3):
         self.core = CoreMoab(mesh_file)
-        self.init_Center()
-        self.init_Volume()
-        self.init_Normal()
-        self.macroDim()
+        self.init_center()
+        self.init_volume()
+        self.init_normal()
+        self.macro_dim()
 
         #self.init_BC()
         # Iniciar condições de contorno
         self.dirichlet_faces = set()
         self.neumann_faces = set()
 
-    def macroDim(self):
+    def macro_dim(self):
         coords = self.core.mb.get_coords(self.core.all_nodes).reshape(len(self.core.all_nodes),3)
         self.rx = (coords[:,0].min(), coords[:,0].max())
         self.ry = (coords[:,1].min(), coords[:,1].max())
@@ -133,22 +133,22 @@ class FineScaleMesh:
 
 
 
-    def init_Center(self):
-        self.core.deftagHandle('CENTER',3)
+    def init_center(self):
+        self.core.create_tag_handle('CENTER',3)
         #centro dos volumes
         centers = np.zeros((len(self.core.all_volumes),3)).astype('float')
         index = 0
         for volume in self.core.all_volumes:
             centers[index] = self.get_centroid(volume)
             index += 1
-        self.core.setData("CENTER",centers)
+        self.core.set_data("CENTER",centers)
         #centro das faces
         centers = np.zeros((len(self.core.all_faces), 3)).astype('float')
         index = 0
         for face in self.core.all_faces:
             centers[index] = self.get_centroid(face)
             index += 1
-        self.core.setData("CENTER", centers, rangeEl = self.core.all_faces)
+        self.core.set_data("CENTER", centers, range_el = self.core.all_faces)
 
         #centro das arestas
         centers = np.zeros((len(self.core.all_edges), 3)).astype('float')
@@ -156,10 +156,10 @@ class FineScaleMesh:
         for edge in self.core.all_edges:
             centers[index] = self.get_centroid(edge)
             index += 1
-        self.core.setData("CENTER", centers, rangeEl = self.core.all_edges)
+        self.core.set_data("CENTER", centers, range_el = self.core.all_edges)
 
-    def init_Normal(self):
-        self.core.deftagHandle('NORMAL', 3)
+    def init_normal(self):
+        self.core.create_tag_handle('NORMAL', 3)
         normal = np.zeros((len(self.core.all_faces), 3)).astype('float')
         index = 0
         for face in self.core.all_faces:
@@ -170,18 +170,18 @@ class FineScaleMesh:
             cross = np.cross(vec1,vec2)
             normal[index] = cross/np.linalg.norm(cross)
             index += 1
-        self.core.setData("NORMAL", normal, rangeEl=self.core.all_faces)
+        self.core.set_data("NORMAL", normal, range_el=self.core.all_faces)
 
 
-    def init_Volume(self):
+    def init_volume(self):
         mat = np.zeros(self.core.all_volumes.size())
         index = 0
         for vol in  self.core.all_volumes:
             mat[index] = self.get_volume(vol)
             index += 1
-        self.core.deftagHandle("VOLUME",1)
+        self.core.create_tag_handle("VOLUME",1)
         #pdb.set_trace()
-        self.core.setData("VOLUME",mat)
+        self.core.set_data("VOLUME",mat)
         #volTag = self.mb.tag_get_handle("VOLUME", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_DENSE, True)
         #self.mb.tag_set_data(volTag, self.all_volumes, mat)
         #return volTag
