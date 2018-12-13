@@ -39,12 +39,6 @@ class CoreMoab:
         self.parallel_meshset = self.create_parallel_meshset()
         self.create_parallel_visualization()
 
-    def __show_edges_matrix(self):
-        tmp_matrix = np.zeros((len(self.all_edges),2))
-        for el, index in zip(self.all_edges, range(len(self.all_edges))):
-            tmp_matrix[index] = self.mb.get_adjacencies(el, 0)
-        return tmp_matrix
-
     def init_id(self):
         # delete previous IDs
         # Gmesh standard counts from 1
@@ -66,20 +60,19 @@ class CoreMoab:
         skin = sk.Skinner(self.mb)
         print("Entering skinner test")
         faces_on_skin_handles = skin.find_skin(self.root_set, self.all_volumes[:])
+        # pdb.set_trace()
         edges_on_skin_handles = self.access_handle(faces_on_skin_handles)
         nodes_on_skin_handles = self.access_handle(edges_on_skin_handles)
         print("Skinning Operation Successful")
-        return [nodes_on_skin_handles,edges_on_skin_handles, faces_on_skin_handles]
+
         #
-        # self.create_tag_handle("SKINPOINT",1, "int", data_density="sparse")
-        # self.create_tag_handle("SKINEDGES", 1, "int", data_density="sparse")
-        # self.create_tag_handle("SKINFACES", 1, "int", data_density="sparse")
-        # self.set_data("SKINPOINT", 200 * np.ones(len(nodes_on_skin_handles)).astype(int),
-        # /range_el=nodes_on_skin_handles)
-        # self.set_data("SKINEDGES", 300 * np.ones(len(edges_on_skin_handles)).astype(int),
-        # /range_el=edges_on_skin_handles)
-        # self.set_data("SKINFACES", 400 * np.ones(len(faces_on_skin_handles)).astype(int),
-        # /range_el=faces_on_skin_handles)
+        self.create_tag_handle("SKINPOINT",1, "int", data_density="sparse")
+        self.create_tag_handle("SKINEDGES", 1, "int", data_density="sparse")
+        self.create_tag_handle("SKINFACES", 1, "int", data_density="sparse")
+        self.set_data("SKINPOINT", 200 * np.ones(len(nodes_on_skin_handles)).astype(int),range_el=nodes_on_skin_handles)
+        self.set_data("SKINEDGES", 300 * np.ones(len(edges_on_skin_handles)).astype(int),range_el=edges_on_skin_handles)
+        self.set_data("SKINFACES", 400 * np.ones(len(faces_on_skin_handles)).astype(int),range_el=faces_on_skin_handles)
+        return [nodes_on_skin_handles, edges_on_skin_handles, faces_on_skin_handles]
 
     def check_integrity(self):
         # check if the mesh contains
@@ -192,7 +185,7 @@ class CoreMoab:
 
         data_node = self.read_data("GLOBAL_ID", range_el=self.all_nodes)
         data_edges = self.read_data("GLOBAL_ID", range_el=self.all_edges)
-        data_faces= self.read_data("GLOBAL_ID", range_el=self.all_faces)
+        data_faces = self.read_data("GLOBAL_ID", range_el=self.all_faces)
         data_volumes = self.read_data("GLOBAL_ID", range_el=self.all_volumes)
 
         self.set_data("ID-NODES", data_node, range_el=self.all_nodes)
@@ -216,8 +209,9 @@ class CoreMoab:
         # ie: for a volume, the faces, for a face the edges and for an edge the points.
         #
         vecdim = self.check_range_by_dimm(handle)
+        # pdb.set_trace()
         all_adj = np.array([np.array(self.mb.get_adjacencies(el_handle, dim-1)) for dim, el_handle in zip(vecdim,handle)])
-        # unique_adj = np.unique(np.ma.concatenate(all_adj)).astype("uint64")
+        #unique_adj = np.unique(np.ma.concatenate(all_adj)).astype("uint64")
         unique_adj = np.unique(np.concatenate(all_adj)).astype("uint64")
         return rng.Range(unique_adj)
 
@@ -355,3 +349,4 @@ class CoreMoab:
         self.mb.write_file(text3, [m3])
         self.mb.write_file(text4, [m4])
         self.mb.write_file(text5)
+

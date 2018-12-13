@@ -1,15 +1,20 @@
-
 import time
 import pdb
 import numpy as np
 from math import pi, sqrt
 from pymoab import core, types, rng, topo_util
 from . corePymoab import CoreMoab
+from . meshComponents import MoabVar
 
-print('STANDARD FINESCALE MESH - NO MULTISCALE')
+
+print('Standard fine-scale mesh loaded: No multiscale components available')
 class FineScaleMesh:
     def __init__(self,mesh_file, dim=3):
         self.core = CoreMoab(mesh_file)
+        self.alma =  MoabVar(self.core, data_format="int", name_tag="alma")
+        #pdb.set_trace()
+
+
         self.init_center()
         self.init_volume()
         self.init_normal()
@@ -26,77 +31,6 @@ class FineScaleMesh:
         self.ry = (coords[:,1].min(), coords[:,1].max())
         self.rz = (coords[:,2].min(), coords[:,2].max())
 
-    def create_vertices(self, coords):
-        new_vertices = self.mb.create_vertices(coords)
-        self.all_nodes.append(new_vertices)
-        return new_vertices
-
-    def create_element(self, poly_type, vertices):
-        new_volume = self.mb.create_element(poly_type, vertices)
-        self.all_volumes.append(new_volume)
-        return new_volume
-
-    def set_information(self, information_name, physicals_values,
-                        dim_target, set_connect=False):
-
-        information_tag = self.mb.tag_get_handle(information_name)
-        for physical, value in physicals_values.items():
-            for a_set in self.physical_sets:
-                physical_group = self.mb.tag_get_data(self.physical_tag,
-                                                      a_set, flat=True)
-
-                if physical_group == physical:
-                    group_elements = self.mb.get_entities_by_dimension(a_set, dim_target)
-
-                    if information_name == 'Dirichlet':
-                        # print('DIR GROUP', len(group_elements), group_elements)
-                        self.dirichlet_faces = self.dirichlet_faces | set(
-                                                    group_elements)
-
-                    if information_name == 'Neumann':
-                        # print('NEU GROUP', len(group_elements), group_elements)
-                        self.neumann_faces = self.neumann_faces | set(
-                                                  group_elements)
-
-                    for element in group_elements:
-                        self.mb.tag_set_data(information_tag, element, value)
-
-                        if set_connect:
-                            connectivities = self.mtu.get_bridge_adjacencies(
-                                                                element, 0, 0)
-                            self.mb.tag_set_data(
-                                information_tag, connectivities,
-                                np.repeat(value, len(connectivities)))
-
-    def get_boundary_nodes(self):
-        all_faces = self.dirichlet_faces | self.neumann_faces
-        boundary_nodes = set()
-        for face in all_faces:
-            nodes = self.mtu.get_bridge_adjacencies(face, 2, 0)
-            boundary_nodes.update(nodes)
-        return boundary_nodes
-
-    def get_non_boundary_volumes(self, dirichlet_nodes, neumann_nodes):
-        volumes = self.all_volumes
-        non_boundary_volumes = []
-        for volume in volumes:
-            volume_nodes = set(self.mtu.get_bridge_adjacencies(volume, 0, 0))
-            if (volume_nodes.intersection(dirichlet_nodes | neumann_nodes)) == set():
-                non_boundary_volumes.append(volume)
-
-        return non_boundary_volumes
-
-    def set_media_property(self, property_name, physicals_values,
-                           dim_target=3, set_nodes=False):
-
-        self.set_information(property_name, physicals_values,
-                             dim_target, set_connect=set_nodes)
-
-    def set_boundary_condition(self, boundary_condition, physicals_values,
-                               dim_target=3, set_nodes=False):
-
-        self.set_information(boundary_condition, physicals_values,
-                             dim_target, set_connect=set_nodes)
 
     def init_bc(self):
         print("Inicializando BC")
@@ -126,7 +60,7 @@ class FineScaleMesh:
 
         self.core.handleDic["NEUMANN_SET"] = neumamn_tag
         #self.core.handleDic["BUNDA"] = bunda_tag
-        pdb.set_trace()
+        #pdb.set_trace()
         print(physical_tag)
         print(dirchlet_tag)
         print(neumamn_tag)
