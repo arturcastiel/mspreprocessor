@@ -58,9 +58,16 @@ M.core.print()
 # vec1 = np.arange(400)
 # vec2 = 800 * np.ones(400)
 
-M.alma[10]
+vec = np.arange(len(M.alma)).astype(int)
 
-pdb.set_trace()
+vec2 = np.array([vec,vec,vec]).T
+#M.alma.set_data(vec2)
+M.alma[:] = vec2
+vec3 = np.array([10,12,13,14,30,35])
+
+M.core.print()
+
+M.alma[10]
 
 # cumaru = M.core.mb.tag_get_handle("GEOM_DIMENSION")
 # M.core.handleDic["GEOM_DIMENSION"] = cumaru

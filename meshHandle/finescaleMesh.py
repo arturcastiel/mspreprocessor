@@ -11,7 +11,7 @@ print('Standard fine-scale mesh loaded: No multiscale components available')
 class FineScaleMesh:
     def __init__(self,mesh_file, dim=3):
         self.core = CoreMoab(mesh_file)
-        self.alma =  MoabVar(self.core, data_format="int", name_tag="alma")
+        self.alma =  MoabVar(self.core,data_size=3,var_type= "edges",  data_format="int", name_tag="alma")
         #pdb.set_trace()
 
 
