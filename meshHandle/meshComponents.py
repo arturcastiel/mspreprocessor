@@ -42,6 +42,74 @@ class MoabVar(object):
         return self.mb.tag_get_data(self.tag_handle, self.elements_handle)
 
     def __setitem__(self,index,data):
+        # if isinstance(index, int):
+        #     range_vec = np.array([index]).astype("uint")
+        # elif isinstance(index, np.ndarray):
+        #     if index.dtype == "bool":
+        #         range_vec = np.where(index)[0]
+        #     else:
+        #         range_vec = index
+        # elif isinstance(index, slice):
+        #     start = index.start
+        #     stop = index.stop
+        #     step = index.step
+        #     #pdb.set_trace()
+        #     if start is None:
+        #         start = 0
+        #     if stop is None:
+        #         stop = len(self)
+        #     if step is None:
+        #         step = 1
+        #     range_vec = np.arange(start, stop, step).astype('uint')
+        # elif isinstance(index, list):
+        #     range_vec = np.array(index)
+        range_vec = self.create_range_vec(index)
+        if isinstance(data, int) or isinstance(data, float) or isinstance(data, bool) :
+            data = data * np.ones((range_vec.shape[0],self.data_size)).astype(self.data_format)
+        elif (isinstance(data, np.ndarray)) and (len(data) == self.data_size) :
+            data = data * np.tile(data,(range_vec.shape[0],1)).astype(self.data_format)
+        elif isinstance(data, list) & (len(data) == self.data_size):
+            data = np.array(data)
+            data = data * np.tile(data,(range_vec.shape[0],1)).astype(self.data_format)
+        self.set_data(data, index_vec = range_vec)
+
+
+    def __getitem__(self, index):
+        # if isinstance(index, int):
+        #     range_vec = np.array([index])
+        #     return self.read_data(range_vec)[0][:]
+        # elif isinstance(index, np.ndarray):
+        #     range_vec = index
+        # elif isinstance(index, slice):
+        #     start = index.start
+        #     stop = index.stop
+        #     step = index.step
+        #     if start is None:
+        #         start = 0
+        #     if stop is None:
+        #         stop = len(self)
+        #     if step is None:
+        #         step = 1
+        #     range_vec = np.arange(start, stop, step).astype('uint')
+        # elif isinstance(index, list):
+        #     range_vec = np.array(index)
+        range_vec = self.create_range_vec(index)
+        if isinstance(index, int):
+            return self.read_data(range_vec)[0][:]
+        else:
+            return self.read_data(range_vec)
+
+    def __str__(self):
+        string = "{0} variable: {1} based - {2} type - {3} length - data {4}".format(self.name_tag, self.var_type,
+                                                                                     self.data_format, self.data_size,
+                                                                                     self.data_density)
+        return string
+
+    def __len__(self):
+        return len(self.elements_handle)
+
+
+    def create_range_vec(self, index):
         if isinstance(index, int):
             range_vec = np.array([index]).astype("uint")
         elif isinstance(index, np.ndarray):
@@ -53,57 +121,21 @@ class MoabVar(object):
             start = index.start
             stop = index.stop
             step = index.step
-            #pdb.set_trace()
             if start is None:
                 start = 0
             if stop is None:
                 stop = len(self)
             if step is None:
                 step = 1
+            if start < 0:
+                start = len(self) + start + 1
+            if stop < 0:
+                stop = len(self) + stop + 1
             range_vec = np.arange(start, stop, step).astype('uint')
         elif isinstance(index, list):
             range_vec = np.array(index)
+        return range_vec
 
-
-        pdb.set_trace()
-
-        self.set_data(data, index_vec = range_vec)
-        # if isinstance(data, int):
-        #     data = data* np.ones((len(self),self.data_size)).astype(self.data_format)
-
-        print(data)
-        pass
-
-    def __getitem__(self, index):
-        if isinstance(index, int):
-            range_vec = np.array([index])
-            return self.read_data(range_vec)[0][:]
-        elif isinstance(index, np.ndarray):
-            range_vec = index
-        elif isinstance(index, slice):
-            start = index.start
-            stop = index.stop
-            step = index.step
-            if start is None:
-                start = 0
-            if stop is None:
-                stop = len(self)
-            if step is None:
-                step = 1
-            range_vec = np.arange(start, stop, step).astype('uint')
-        elif isinstance(index, list):
-            range_vec = np.array(index)
-        return self.read_data(range_vec)
-
-
-    def __str__(self):
-        string = "{0} variable: {1} based - {2} type - {3} length - data {4}".format(self.name_tag, self.var_type,
-                                                                                     self.data_format, self.data_size,
-                                                                                     self.data_density)
-        return string
-
-    def __len__(self):
-        return len(self.elements_handle)
 
     def range_index(self, vec_index):
         range_handle = self.elements_handle
@@ -120,8 +152,8 @@ class MoabVar(object):
             range_el = self.range_index(index_vec)
         else:
             range_el = self.elements_handle
-        if len(data) != len(range_el):
-            print("Operation failed: Range handle and data vector mismatch")
+        # if len(data) != len(range_el):
+        #     print("Operation failed: Range handle and data vector mismatch")
         self.mb.tag_set_data(self.tag_handle, range_el, data)
 
     def read_data(self, index_vec=np.array([])):
