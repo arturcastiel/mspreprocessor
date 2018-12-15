@@ -43,9 +43,12 @@ class MoabVar(object):
 
     def __setitem__(self,index,data):
         if isinstance(index, int):
-            range_vec = np.array([index])
+            range_vec = np.array([index]).astype("uint")
         elif isinstance(index, np.ndarray):
-            range_vec = index
+            if index.dtype == "bool":
+                range_vec = np.where(index)[0]
+            else:
+                range_vec = index
         elif isinstance(index, slice):
             start = index.start
             stop = index.stop
@@ -60,6 +63,9 @@ class MoabVar(object):
             range_vec = np.arange(start, stop, step).astype('uint')
         elif isinstance(index, list):
             range_vec = np.array(index)
+
+
+        pdb.set_trace()
 
         self.set_data(data, index_vec = range_vec)
         # if isinstance(data, int):
@@ -109,7 +115,7 @@ class MoabVar(object):
         return rng.Range(handles)
 
     def set_data(self, data, index_vec=np.array([])):
-        pdb.set_trace()
+        #pdb.set_trace()
         if index_vec.size > 0:
             range_el = self.range_index(index_vec)
         else:

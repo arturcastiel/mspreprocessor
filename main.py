@@ -22,7 +22,6 @@ M = msh("semi.msh")
 #pdb.set_trace()
 # print(M.core.access_meshset(0))
 # # print(M.core.mb.get_entities_by_handle(0))
-M.core.print()
 #
 # vec = np.array([0,1,2,3,4])
 # vec2 = np.zeros(len(M.core.all_faces),dtype = bool)
@@ -65,9 +64,13 @@ vec2 = np.array([vec,vec,vec]).T
 M.alma[:] = vec2
 vec3 = np.array([10,12,13,14,30,35])
 
+vec1 = np.arange(8)
+p = vec2[2:10,:]
+
+
+
 M.core.print()
 
-M.alma[10]
 
 # cumaru = M.core.mb.tag_get_handle("GEOM_DIMENSION")
 # M.core.handleDic["GEOM_DIMENSION"] = cumaru
