@@ -7,6 +7,7 @@ import pdb
 class MeshEntities(object):
     def __init__(self, core, entity_type):
         self.mb = core.mb
+        self.meshset = core.root_set
         if entity_type == "nodes":
             self.elements_handle = core.all_nodes
             self.internal_elements = core.internal_nodes
@@ -20,19 +21,39 @@ class MeshEntities(object):
         elif entity_type == "faces":
             self.elements_handle = core.all_faces
             self.internal_elements = core.internal_faces
-            self.boundary_elements = core.boundary_nodes
+            self.boundary_elements = core.boundary_faces
             self.vID = 2
         elif entity_type == "volumes":
             self.elements_handle = core.all_volumes
+            self.boundary_elements = core.boundary_volumes
             self.vID = 3
         self.tag_handle = core.handleDic["GLOBAL_ID"]
+        self.t_range_vec = self.elements_handle
         print(self.tag_handle)
         print("Mesh Entity type {0} successfully intialized".format(entity_type))
         print(self.read(self.boundary_elements))
 
     def __getitem__(self, index):
         range_vec = self.create_range_vec(index)
-        return rng.Range(np.asarray(self.elements_handle)[range_vec].astype("uint"))
+        self.t_range_vec = rng.Range(np.asarray(self.elements_handle)[range_vec].astype("uint"))
+        return self
+
+    def access_handle(self):
+        # input: range of handles of different dimensions
+
+        # returns all entities with d-1 dimension the comprises the given range
+        # ie: for a volume, the faces, for a face the edges and for an edge the points.
+        #
+        handle = self.t_range_vec
+        vecdim = self.vID * np.ones(len(self.t_range_vec)).astype(int)
+        # pdb.set_trace()
+        all_adj = np.array([np.array(self.mb.get_adjacencies(el_handle, dim-1)) for dim, el_handle in zip(vecdim,handle)])
+        #unique_adj = np.unique(np.ma.concatenate(all_adj)).astype("uint64")
+        pdb.set_trace()
+        unique_adj = np.unique(np.concatenate(all_adj)).astype("uint64")
+        return rng.Range(unique_adj)
+
+
 
     def create_range_vec(self, index):
         if isinstance(index, int):

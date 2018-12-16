@@ -12,7 +12,7 @@ class FineScaleMesh:
     def __init__(self,mesh_file, dim=3):
         self.core = CoreMoab(mesh_file)
         self.alma =  MoabVariable(self.core,data_size=3,var_type= "edges",  data_format="int", name_tag="alma")
-        self.edges = MeshEntities(self.core, entity_type = "edges")
+        self.edges = MeshEntities(self.core, entity_type = "volumes")
         #pdb.set_trace()
 
 
