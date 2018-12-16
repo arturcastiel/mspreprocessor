@@ -4,14 +4,15 @@ import numpy as np
 from math import pi, sqrt
 from pymoab import core, types, rng, topo_util
 from . corePymoab import CoreMoab
-from . meshComponents import MoabVar
+from . meshComponents import MoabVariable, MeshEntities
 
 
 print('Standard fine-scale mesh loaded: No multiscale components available')
 class FineScaleMesh:
     def __init__(self,mesh_file, dim=3):
         self.core = CoreMoab(mesh_file)
-        self.alma =  MoabVar(self.core,data_size=3,var_type= "edges",  data_format="int", name_tag="alma")
+        self.alma =  MoabVariable(self.core,data_size=3,var_type= "edges",  data_format="int", name_tag="alma")
+        self.edges = MeshEntities(self.core, entity_type = "edges")
         #pdb.set_trace()
 
 

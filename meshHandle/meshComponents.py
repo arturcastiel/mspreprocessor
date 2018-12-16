@@ -3,9 +3,87 @@ from pymoab import types, rng
 import pdb
 
 
-class MoabVar(object):
-    def __init__(self, core, name_tag, var_type="volumes", data_size=1, data_format="float", data_density="sparse"):
-        print("Component Class Successfully intialized")
+
+class MeshEntities(object):
+    def __init__(self, core, entity_type):
+        self.mb = core.mb
+        if entity_type == "nodes":
+            self.elements_handle = core.all_nodes
+            self.internal_elements = core.internal_nodes
+            self.boundary_elements = core.boundary_nodes
+            self.vID = 0
+        elif entity_type  == "edges":
+            self.elements_handle = core.all_edges
+            self.internal_elements = core.internal_edges
+            self.boundary_elements = core.boundary_edges
+            self.vID = 1
+        elif entity_type == "faces":
+            self.elements_handle = core.all_faces
+            self.internal_elements = core.internal_faces
+            self.boundary_elements = core.boundary_nodes
+            self.vID = 2
+        elif entity_type == "volumes":
+            self.elements_handle = core.all_volumes
+            self.vID = 3
+        self.tag_handle = core.handleDic["GLOBAL_ID"]
+        print(self.tag_handle)
+        print("Mesh Entity type {0} successfully intialized".format(entity_type))
+        print(self.read(self.boundary_elements))
+
+    def __getitem__(self, index):
+        range_vec = self.create_range_vec(index)
+        return rng.Range(np.asarray(self.elements_handle)[range_vec].astype("uint"))
+
+    def create_range_vec(self, index):
+        if isinstance(index, int):
+            range_vec = np.array([index]).astype("uint")
+        elif isinstance(index, np.ndarray):
+            if index.dtype == "bool":
+                range_vec = np.where(index)[0]
+            else:
+                range_vec = index
+        elif isinstance(index, slice):
+            start = index.start
+            stop = index.stop
+            step = index.step
+            if start is None:
+                start = 0
+            if stop is None:
+                stop = len(self)
+            if step is None:
+                step = 1
+            if start < 0:
+                start = len(self) + start + 1
+            if stop < 0:
+                stop = len(self) + stop + 1
+            range_vec = np.arange(start, stop, step).astype('uint')
+        elif isinstance(index, list):
+            range_vec = np.array(index)
+        return range_vec
+
+
+    def __call__(self):
+        return self.all
+    def read(self,handle):
+        return self.mb.tag_get_data(self.tag_handle, handle).ravel()
+
+    @property
+    def all(self):
+        return self.read(self.elements_handle)
+    @property
+    def boundary(self):
+        return self.read(self.boundary_elements)
+    @property
+    def internal(self):
+        return self.read(self.internal_elements)
+    @internal.setter
+    def pro(self,data):
+        self._data = data
+
+
+
+class MoabVariable(object):
+    def __init__(self, core, name_tag, var_type="volumes", data_size=1, data_format="float", data_density="sparse", entity_handle = None):
         # pdb.set_trace()
         self.mb = core.mb
         self.var_type = var_type
@@ -13,15 +91,17 @@ class MoabVar(object):
         self.data_size = data_size
         self.data_density = data_density
         self.name_tag = name_tag
-
-        if var_type == "nodes":
-            self.elements_handle = core.all_nodes
-        elif var_type == "edges":
-            self.elements_handle = core.all_edges
-        elif var_type == "faces":
-            self.elements_handle = core.all_faces
-        elif var_type == "volumes":
-            self.elements_handle = core.all_volumes
+        if entity_handle == None:
+            if var_type == "nodes":
+                self.elements_handle = core.all_nodes
+            elif var_type == "edges":
+                self.elements_handle = core.all_edges
+            elif var_type == "faces":
+                self.elements_handle = core.all_faces
+            elif var_type == "volumes":
+                self.elements_handle = core.all_volumes
+        else:
+            self.elements_handle = entity_handle
         if data_density == "dense":
             data_density = types.MB_TAG_DENSE
         elif data_density == "sparse":
@@ -37,6 +117,7 @@ class MoabVar(object):
         elif data_format == "bool":
             data_format = types.MB_TYPE_BIT
         self.tag_handle = self.mb.tag_get_handle(name_tag, data_size, data_format, data_density, True)
+        print("Component class {0} successfully intialized".format(self.name_tag))
 
     def __call__(self):
         return self.mb.tag_get_data(self.tag_handle, self.elements_handle)
