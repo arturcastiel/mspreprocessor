@@ -20,14 +20,12 @@ class CoreMoab:
         self.all_edges = self.mb.get_entities_by_dimension(0, self.dimension-2)
 
         self.handleDic = {}
-
         [self.boundary_nodes, self.boundary_edges, self.boundary_faces, self.boundary_volumes] = self.skinner_operation()
 
         self.internal_nodes = rng.subtract(self.all_nodes, self.boundary_nodes)
         self.internal_edges = rng.subtract(self.all_edges, self.boundary_edges)
         self.internal_faces = rng.subtract(self.all_faces, self.boundary_faces)
         self.internal_volumes = rng.subtract(self.all_volumes, self.boundary_volumes)
-
 
         self.init_id()
         self.check_integrity()
@@ -70,24 +68,19 @@ class CoreMoab:
         check_volumes = np.asarray([rng.intersect(el_handle,nodes_on_skin_handles) for el_handle in nodes_in_volumes])
         external_volumes_index = np.array([el_handle.empty() for el_handle in check_volumes]).astype(bool)
         volumes_on_skin_handles = self.range_index(np.bitwise_not(external_volumes_index),self.all_volumes)
-        #all_points =np.array([self.mb.get_adjacencies(el_handle,0) for el_handle in adj])
+        #
+        print("Skinning Operation Successful")
 
-        #all_adj = np.array([np.array(self.mb.get_adjacencies(el_handle, 4-1)) for el_handle in self.all_volumes])
+        #
+        self.create_tag_handle("SKINPOINT",1, "int", data_density="sparse")
+        self.create_tag_handle("SKINEDGES", 1, "int", data_density="sparse")
+        self.create_tag_handle("SKINFACES", 1, "int", data_density="sparse")
+        self.create_tag_handle("SKINVOLUMES", 1, "int", data_density="sparse")
 
-        #all_adj = np.array([np.array(self.mb.get_adjacencies(el_handle, dim-1)) for dim, el_handle in zip(vecdim,self.all_volumes])
-        #
-        # print("Skinning Operation Successful")
-        #
-        # #
-        # self.create_tag_handle("SKINPOINT",1, "int", data_density="sparse")
-        # self.create_tag_handle("SKINEDGES", 1, "int", data_density="sparse")
-        # self.create_tag_handle("SKINFACES", 1, "int", data_density="sparse")
-        # self.create_tag_handle("SKINVOLUMES", 1, "int", data_density="sparse")
-        #
-        # self.set_data("SKINPOINT", 200 * np.ones(len(nodes_on_skin_handles)).astype(int),range_el=nodes_on_skin_handles)
-        # self.set_data("SKINEDGES", 300 * np.ones(len(edges_on_skin_handles)).astype(int),range_el=edges_on_skin_handles)
-        # self.set_data("SKINFACES", 400 * np.ones(len(faces_on_skin_handles)).astype(int),range_el=faces_on_skin_handles)
-        # self.set_data("SKINVOLUMES", 800 * np.ones(len(volumes_on_skin_handles)).astype(int),range_el=volumes_on_skin_handles)
+        self.set_data("SKINPOINT", 200 * np.ones(len(nodes_on_skin_handles)).astype(int),range_el=nodes_on_skin_handles)
+        self.set_data("SKINEDGES", 300 * np.ones(len(edges_on_skin_handles)).astype(int),range_el=edges_on_skin_handles)
+        self.set_data("SKINFACES", 400 * np.ones(len(faces_on_skin_handles)).astype(int),range_el=faces_on_skin_handles)
+        self.set_data("SKINVOLUMES", 800 * np.ones(len(volumes_on_skin_handles)).astype(int),range_el=volumes_on_skin_handles)
 
         return [nodes_on_skin_handles, edges_on_skin_handles, faces_on_skin_handles, volumes_on_skin_handles]
 

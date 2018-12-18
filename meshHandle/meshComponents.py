@@ -3,10 +3,23 @@ from pymoab import types, rng
 import pdb
 
 
+class GetItem(object):
+    def __init__(self, adj):
+        self.fun = adj
+
+    def __call__(self, item):
+        return self.funj(item)
+
+    def __getitem__(self, item):
+        return self.fun(item)
+
+
+
 
 class MeshEntities(object):
     def __init__(self, core, entity_type):
         self.mb = core.mb
+        self.mtu = core.mtu
         self.meshset = core.root_set
         if entity_type == "nodes":
             self.elements_handle = core.all_nodes
@@ -25,18 +38,33 @@ class MeshEntities(object):
             self.vID = 2
         elif entity_type == "volumes":
             self.elements_handle = core.all_volumes
+            self.internal_elements = core.internal_volumes
             self.boundary_elements = core.boundary_volumes
             self.vID = 3
         self.tag_handle = core.handleDic["GLOBAL_ID"]
         self.t_range_vec = self.elements_handle
-        print(self.tag_handle)
-        print("Mesh Entity type {0} successfully intialized".format(entity_type))
-        print(self.read(self.boundary_elements))
+        self.adjacencies = GetItem(self._adjacencies)
 
-    def __getitem__(self, index):
+
+        print("Mesh Entity type {0} successfully intialized".format(entity_type))
+
+
+    def _adjacencies_bridge(self,index):
         range_vec = self.create_range_vec(index)
-        self.t_range_vec = rng.Range(np.asarray(self.elements_handle)[range_vec].astype("uint"))
-        return self
+        dim_tag = self.vID + 1
+
+        self.mtu.get_bridge_adjacencies(range_vec)
+
+        self.meshset
+
+
+
+    def _adjacencies(self, index):
+        range_vec = self.create_range_vec(index)
+        dim_tag = self.vID -1
+        all_adj = [self.mb.get_adjacencies(el_handle, dim_tag) for el_handle in self.range_index(range_vec)]
+        adj_id = np.array([self.read(el_handle) for el_handle in all_adj])
+        return adj_id
 
     def access_handle(self):
         # input: range of handles of different dimensions
@@ -46,14 +74,9 @@ class MeshEntities(object):
         #
         handle = self.t_range_vec
         vecdim = self.vID * np.ones(len(self.t_range_vec)).astype(int)
-        # pdb.set_trace()
         all_adj = np.array([np.array(self.mb.get_adjacencies(el_handle, dim-1)) for dim, el_handle in zip(vecdim,handle)])
-        #unique_adj = np.unique(np.ma.concatenate(all_adj)).astype("uint64")
-        pdb.set_trace()
         unique_adj = np.unique(np.concatenate(all_adj)).astype("uint64")
         return rng.Range(unique_adj)
-
-
 
     def create_range_vec(self, index):
         if isinstance(index, int):
@@ -82,24 +105,39 @@ class MeshEntities(object):
             range_vec = np.array(index)
         return range_vec
 
+    def range_index(self, vec_index):
+        range_handle = self.elements_handle
+        if vec_index.dtype == "bool":
+            vec = np.where(vec_index)[0]
+        else:
+            vec = vec_index.astype("uint")
+        handles = np.asarray(range_handle)[vec.astype("uint")].astype("uint")
+        return rng.Range(handles)
 
     def __call__(self):
         return self.all
-    def read(self,handle):
+
+    def read(self, handle):
         return self.mb.tag_get_data(self.tag_handle, handle).ravel()
 
     @property
     def all(self):
         return self.read(self.elements_handle)
+
     @property
     def boundary(self):
         return self.read(self.boundary_elements)
+
     @property
     def internal(self):
         return self.read(self.internal_elements)
-    @internal.setter
-    def pro(self,data):
-        self._data = data
+    #
+    # @internal.setter
+    # def pro(self,data):
+    #     self._data = data
+
+
+
 
 
 
@@ -140,31 +178,13 @@ class MoabVariable(object):
         self.tag_handle = self.mb.tag_get_handle(name_tag, data_size, data_format, data_density, True)
         print("Component class {0} successfully intialized".format(self.name_tag))
 
+
+
+
     def __call__(self):
         return self.mb.tag_get_data(self.tag_handle, self.elements_handle)
 
-    def __setitem__(self,index,data):
-        # if isinstance(index, int):
-        #     range_vec = np.array([index]).astype("uint")
-        # elif isinstance(index, np.ndarray):
-        #     if index.dtype == "bool":
-        #         range_vec = np.where(index)[0]
-        #     else:
-        #         range_vec = index
-        # elif isinstance(index, slice):
-        #     start = index.start
-        #     stop = index.stop
-        #     step = index.step
-        #     #pdb.set_trace()
-        #     if start is None:
-        #         start = 0
-        #     if stop is None:
-        #         stop = len(self)
-        #     if step is None:
-        #         step = 1
-        #     range_vec = np.arange(start, stop, step).astype('uint')
-        # elif isinstance(index, list):
-        #     range_vec = np.array(index)
+    def __setitem__(self, index, data):
         range_vec = self.create_range_vec(index)
         if isinstance(data, int) or isinstance(data, float) or isinstance(data, bool) :
             data = data * np.ones((range_vec.shape[0],self.data_size)).astype(self.data_format)
@@ -177,24 +197,6 @@ class MoabVariable(object):
 
 
     def __getitem__(self, index):
-        # if isinstance(index, int):
-        #     range_vec = np.array([index])
-        #     return self.read_data(range_vec)[0][:]
-        # elif isinstance(index, np.ndarray):
-        #     range_vec = index
-        # elif isinstance(index, slice):
-        #     start = index.start
-        #     stop = index.stop
-        #     step = index.step
-        #     if start is None:
-        #         start = 0
-        #     if stop is None:
-        #         stop = len(self)
-        #     if step is None:
-        #         step = 1
-        #     range_vec = np.arange(start, stop, step).astype('uint')
-        # elif isinstance(index, list):
-        #     range_vec = np.array(index)
         range_vec = self.create_range_vec(index)
         if isinstance(index, int):
             return self.read_data(range_vec)[0][:]
