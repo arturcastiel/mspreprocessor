@@ -48,14 +48,15 @@ class MeshEntities(object):
 
         print("Mesh Entity type {0} successfully intialized".format(entity_type))
 
+    def adjacencies_bridge(self,index, interface, target ):
+        # lacks support for indexing with multiple numbers
 
-    def _adjacencies_bridge(self,index):
+        num = {"nodes": 0, "node": 0, "edges": 1, "edge": 1, "faces": 2, "face": 2, "volumes": 3, "volume": 3}
         range_vec = self.create_range_vec(index)
-        dim_tag = self.vID + 1
-
-        self.mtu.get_bridge_adjacencies(range_vec)
-
-        self.meshset
+        all_bridge =  self.mtu.get_bridge_adjacencies(range_vec, num[interface], num[target])
+        # filtering with entities belonging only to the meshset of the class
+        inside_meshset = self.mb.get_entities_by_handle(self.meshset)
+        return rng.intersect(all_bridge,inside_meshset)
 
 
 
