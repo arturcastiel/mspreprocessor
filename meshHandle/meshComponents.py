@@ -140,7 +140,7 @@ class MeshEntities(object):
 
 class MoabVariable(object):
     def __init__(self, core, name_tag, var_type="volumes", data_size=1, data_format="float", data_density="sparse",
-                 entity_handle=None):
+                 entity_index=None):
         # pdb.set_trace()
         self.mb = core.mb
         self.var_type = var_type
@@ -148,17 +148,21 @@ class MoabVariable(object):
         self.data_size = data_size
         self.data_density = data_density
         self.name_tag = name_tag
-        if entity_handle == None:
-            if var_type == "nodes":
-                self.elements_handle = core.all_nodes
-            elif var_type == "edges":
-                self.elements_handle = core.all_edges
-            elif var_type == "faces":
-                self.elements_handle = core.all_faces
-            elif var_type == "volumes":
-                self.elements_handle = core.all_volumes
-        else:
-            self.elements_handle = entity_handle
+        self.custom = False
+
+        if var_type == "nodes":
+            self.elements_handle = core.all_nodes
+        elif var_type == "edges":
+            self.elements_handle = core.all_edges
+        elif var_type == "faces":
+            self.elements_handle = core.all_faces
+        elif var_type == "volumes":
+            self.elements_handle = core.all_volumes
+
+        if entity_index is not None:
+            self.elements_handle = self.range_index(entity_index)
+            self.custom = True
+
         if data_density == "dense":
             data_density = types.MB_TAG_DENSE
         elif data_density == "sparse":
@@ -198,9 +202,11 @@ class MoabVariable(object):
             return self.read_data(range_vec)
 
     def __str__(self):
-        string = "{0} variable: {1} based - {2} type - {3} length - data {4}".format(self.name_tag, self.var_type,
-                                                                                     self.data_format, self.data_size,
-                                                                                     self.data_density)
+        string = "{0} variable: {1} based - Type: {2} - Length: {3} - Data Type: {4}"\
+            .format(self.name_tag.capitalize(), self.var_type.capitalize(), self.data_format.capitalize(),
+                    self.data_size, self.data_density.capitalize())
+        if self.custom:
+            string = string + " - Custom variable"
         return string
 
     def __len__(self):

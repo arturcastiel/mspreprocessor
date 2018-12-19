@@ -21,6 +21,8 @@ class FineScaleMesh:
 
         self.volumes = MeshEntities(self.core, entity_type = "faces")
 
+        self.ama = MoabVariable(self.core,data_size=1,var_type= "faces",  data_format="float", name_tag="ama",
+                                entity_index= self.faces.boundary, data_density="dense")
 
         #pdb.set_trace()
 
