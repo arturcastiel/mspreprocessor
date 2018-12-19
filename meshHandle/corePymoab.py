@@ -11,8 +11,6 @@ class CoreMoab:
         self.root_set = self.mb.get_root_set()
         self.mtu = topo_util.MeshTopoUtil(self.mb)
         self.mb.load_file(mesh_file)
-
-        #
         self.all_volumes = self.mb.get_entities_by_dimension(0, self.dimension)
         self.all_nodes = self.mb.get_entities_by_dimension(0, 0)
         self.mtu.construct_aentities(self.all_nodes)

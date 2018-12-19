@@ -21,7 +21,6 @@ class MeshEntities(object):
         self.meshset = core.root_set
         self.num = {"nodes": 0, "node": 0, "edges": 1, "edge": 1, "faces": 2, "face": 2, "volumes": 3, "volume": 3,
                     0: 0, 1: 1, 2: 2, 3: 3}
-
         string = {0: "nodes", 1: "edges", 2: "faces", 3: "volumes"}
         entity_num = self.num[entity_type]
         if entity_num == 0:
@@ -46,12 +45,19 @@ class MeshEntities(object):
             self.vID = 3
         self.entity_type = string[entity_num]
         self.tag_handle = core.handleDic["GLOBAL_ID"]
-        self.t_range_vec = self.elements_handle
         self.adjacencies = GetItem(self._adjacencies)
 
-        print("Mesh Entity type {0} successfully intialized".format(entity_type))
+        # initialize specific flag dic in accordance with type of the object create
+        self.flag = {key: self.read(value[self.vID]) for key, value in core.flag_dic.items()
+                     if value[self.vID].empty() is not True}
 
-    def adjacencies_bridge(self, index, interface, target):
+        print("Mesh Entity type {0} successfully initialized".format(entity_type))
+
+    @property
+    def all_flags(self):
+        return np.array(list(self.flag.keys())).astype(int)
+
+    def bridge_adjacencies(self, index, interface, target):
         # lacks support for indexing with multiple numbers
         range_vec = self.create_range_vec(index)
         all_bridge = [self.mtu.get_bridge_adjacencies(el_handle, self.num[interface], self.num[target]) for el_handle
@@ -63,24 +69,13 @@ class MeshEntities(object):
 
     def _adjacencies(self, index):
         range_vec = self.create_range_vec(index)
-        dim_tag = self.vID -1
+        dim_tag = self.vID - 1
         all_adj = [self.mb.get_adjacencies(el_handle, dim_tag) for el_handle in self.range_index(range_vec)]
         adj_id = np.array([self.read(el_handle) for el_handle in all_adj])
         return adj_id
 
-    def access_handle(self):
-        # input: range of handles of different dimensions
-
-        # returns all entities with d-1 dimension the comprises the given range
-        # ie: for a volume, the faces, for a face the edges and for an edge the points.
-        #
-        handle = self.t_range_vec
-        vecdim = self.vID * np.ones(len(self.t_range_vec)).astype(int)
-        all_adj = np.array([np.array(self.mb.get_adjacencies(el_handle, dim-1)) for dim, el_handle in zip(vecdim,handle)])
-        unique_adj = np.unique(np.concatenate(all_adj)).astype("uint64")
-        return rng.Range(unique_adj)
-
     def create_range_vec(self, index):
+        range_vec = None
         if isinstance(index, int):
             range_vec = np.array([index]).astype("uint")
         elif isinstance(index, np.ndarray):
@@ -117,9 +112,8 @@ class MeshEntities(object):
         return rng.Range(handles)
 
     def __str__(self):
-        string = "{0} variable: {1} based - {2} type - {3} length - data {4}".format(self.name_tag, self.var_type,
-                                                                                     self.data_format, self.data_size,
-                                                                                     self.data_density)
+        string = "{0} object \n Total of {1} {0} \n {2}  boundary {0} \n {3} internal {0}".format(self.entity_type,
+            len(self.elements_handle), len(self.boundary_elements), len(self.internal_elements))
         return string
 
     def __len__(self):
@@ -142,18 +136,11 @@ class MeshEntities(object):
     @property
     def internal(self):
         return self.read(self.internal_elements)
-    #
-    # @internal.setter
-    # def pro(self,data):
-    #     self._data = data
-
-
-
-
 
 
 class MoabVariable(object):
-    def __init__(self, core, name_tag, var_type="volumes", data_size=1, data_format="float", data_density="sparse", entity_handle = None):
+    def __init__(self, core, name_tag, var_type="volumes", data_size=1, data_format="float", data_density="sparse",
+                 entity_handle=None):
         # pdb.set_trace()
         self.mb = core.mb
         self.var_type = var_type
@@ -194,14 +181,14 @@ class MoabVariable(object):
 
     def __setitem__(self, index, data):
         range_vec = self.create_range_vec(index)
-        if isinstance(data, int) or isinstance(data, float) or isinstance(data, bool) :
-            data = data * np.ones((range_vec.shape[0],self.data_size)).astype(self.data_format)
-        elif (isinstance(data, np.ndarray)) and (len(data) == self.data_size) :
-            data = data * np.tile(data,(range_vec.shape[0],1)).astype(self.data_format)
+        if isinstance(data, int) or isinstance(data, float) or isinstance(data, bool):
+            data = data * np.ones((range_vec.shape[0], self.data_size)).astype(self.data_format)
+        elif (isinstance(data, np.ndarray)) and (len(data) == self.data_size):
+            data = data * np.tile(data, (range_vec.shape[0], 1)).astype(self.data_format)
         elif isinstance(data, list) & (len(data) == self.data_size):
             data = np.array(data)
-            data = data * np.tile(data,(range_vec.shape[0],1)).astype(self.data_format)
-        self.set_data(data, index_vec = range_vec)
+            data = data * np.tile(data, (range_vec.shape[0], 1)).astype(self.data_format)
+        self.set_data(data, index_vec=range_vec)
 
     def __getitem__(self, index):
         range_vec = self.create_range_vec(index)
@@ -219,8 +206,8 @@ class MoabVariable(object):
     def __len__(self):
         return len(self.elements_handle)
 
-
     def create_range_vec(self, index):
+        range_vec = None
         if isinstance(index, int):
             range_vec = np.array([index]).astype("uint")
         elif isinstance(index, np.ndarray):
@@ -247,7 +234,6 @@ class MoabVariable(object):
             range_vec = np.array(index)
         return range_vec
 
-
     def range_index(self, vec_index):
         range_handle = self.elements_handle
         if vec_index.dtype == "bool":
@@ -258,13 +244,10 @@ class MoabVariable(object):
         return rng.Range(handles)
 
     def set_data(self, data, index_vec=np.array([])):
-        #pdb.set_trace()
         if index_vec.size > 0:
             range_el = self.range_index(index_vec)
         else:
             range_el = self.elements_handle
-        # if len(data) != len(range_el):
-        #     print("Operation failed: Range handle and data vector mismatch")
         self.mb.tag_set_data(self.tag_handle, range_el, data)
 
     def read_data(self, index_vec=np.array([])):
