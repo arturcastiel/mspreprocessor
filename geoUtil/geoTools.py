@@ -52,29 +52,39 @@ def hexahedronVolume(hexa_nodes):
     #  |_____|/
     #
     #
-    # P1 _____P2     P5  ____ P6
+    # P4 _____P5     P6  ____ P7
     #   |     |         |    |
     #   | F1  |         | F2 |
     #   |_____|         |____|
-    # P4      P3     P8       P7
+    # P0      P1     P2       P3
     #
     # F1 - Front Face
     # F2 - Back Face
     #  NOTE:
-    #  The given hexahedron may be irregular
-    #  The sketch above describes the connectivities
+    # The given hexahedron may be irregular
+    # The method used here includes this possibility
+    # The sketch above describes the connectivities
     #
-    #input:
+    # Input:
     # A Matrix with 8x3 elements in which
     # each line is one of the 8 nodes that
-    # a given hexahedron
-    #ouput:
-    # the volume of the given hexahedron
+    # a given hexahedron. The sequence of
+    # the nodes in the matrix must be the
+    # same as the figure.
+    #
+    # Ouput:
+    # The volume of the given hexahedron
 
-    vect_1 = hexa_nodes[1] - hexa_nodes[0]
-    vect_2 = hexa_nodes[2] - hexa_nodes[0]
-    vect_3 = hexa_nodes[3] - hexa_nodes[0]
-    hexa_vol = abs(np.dot(np.cross(vect_1, vect_2), vect_3))/1
+    vector1 = np.cross(((coord[7]-coord[1])+(coord[6]-coord[0])), (coord[7]-coord[2]))
+    volume1 = np.dot(vector1, (coord[3]-coord[0]))
+
+    vector2 = np.cross((coord[6]-coord[0]), (coord[7]-coord[2])+(coord[5]-coord[0]))
+    volume2 = np.dot(vector2,(coord[7]-coord[4]))
+
+    vector3 = np.cross((coord[7]-coord[1]), (coord[5]-coord[0]))
+    volume3 = np.dot(vector3, ((coord[7]-coord[4])+(coord[3]-coord[0])))
+
+    hexa_vol = (volume1+volume2+volume3)/12
     return (hexa_vol)
 
 def teste():
