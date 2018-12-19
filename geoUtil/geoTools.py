@@ -75,16 +75,16 @@ def hexahedronVolume(hexa_nodes):
     # Ouput:
     # The volume of the given hexahedron
 
-    vector1 = np.cross(((coord[7]-coord[1])+(coord[6]-coord[0])), (coord[7]-coord[2]))
-    volume1 = np.dot(vector1, (coord[3]-coord[0]))
+    vetor = np.cross((hexa_nodes[7]-hexa_nodes[0]), (hexa_nodes[1]-hexa_nodes[0]))
+    volume1 = np.dot(vetor, (hexa_nodes[3]-hexa_nodes[5]))
 
-    vector2 = np.cross((coord[6]-coord[0]), (coord[7]-coord[2])+(coord[5]-coord[0]))
-    volume2 = np.dot(vector2,(coord[7]-coord[4]))
+    vetor2 = np.cross((hexa_nodes[7]-hexa_nodes[0]), (hexa_nodes[4]-hexa_nodes[0]))
+    volume2 = np.dot(vetor2,(hexa_nodes[5]-hexa_nodes[6]))
 
-    vector3 = np.cross((coord[7]-coord[1]), (coord[5]-coord[0]))
-    volume3 = np.dot(vector3, ((coord[7]-coord[4])+(coord[3]-coord[0])))
+    vetor3 = np.cross((hexa_nodes[7]-hexa_nodes[0]), (hexa_nodes[2]-hexa_nodes[0]))
+    volume3 = np.dot(vetor3, (hexa_nodes[6]-hexa_nodes[3]))
 
-    hexa_vol = (volume1+volume2+volume3)/12
+    hexa_vol = (volume1+volume2+volume3)/6
     return (hexa_vol)
 
 def teste():
