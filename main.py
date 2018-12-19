@@ -18,6 +18,7 @@ from pymoab import core, types, rng, topo_util
 
 M = msh("semi.msh")
 vec = np.arange(len(M.alma)).astype(int)
+M.core.print()
 
 # vec2 = np.array([vec,vec,vec]).T
 # #M.alma.set_data(vec2)

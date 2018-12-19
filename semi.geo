@@ -1,6 +1,6 @@
-a = 3;
-b = 2;
-c = 2;
+a = 1;
+b = 1;
+c = 1;
 
 
 
@@ -52,8 +52,8 @@ Recombine Surface {1, 3, 6, 5, 2, 4};
 //Transfinite Surface {5};
 //Transfinite Volume {1};
 Physical Line(201) = {1, 2, 3, 4};
-Physical Surface(101) = {1,2,3};
-Physical Surface(202) = {4,5,6};
+Physical Surface(801) = {1,2,3};
+Physical Surface(802) = {4,5,6};
 
 Physical Point(101) = {1, 2, 3, 4};
 Physical Point(202) = {5,6,7,8};

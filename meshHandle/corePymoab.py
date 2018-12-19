@@ -341,7 +341,9 @@ class CoreMoab:
         self.mb.add_entities(m1, self.all_nodes)
         m2 = self.mb.create_meshset()
         self.mb.add_entities(m2, self.all_faces)
+        self.mb.remove_entities(m2, self.all_nodes)
         m3 = self.mb.create_meshset()
+
         self.mb.add_entities(m3, self.all_volumes)
         m4 = self.mb.create_meshset()
         self.mb.add_entities(m4, self.all_edges)

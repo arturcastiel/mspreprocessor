@@ -14,51 +14,52 @@ class GetItem(object):
         return self.fun(item)
 
 
-
-
 class MeshEntities(object):
     def __init__(self, core, entity_type):
         self.mb = core.mb
         self.mtu = core.mtu
         self.meshset = core.root_set
-        if entity_type == "nodes":
+        self.num = {"nodes": 0, "node": 0, "edges": 1, "edge": 1, "faces": 2, "face": 2, "volumes": 3, "volume": 3,
+                    0: 0, 1: 1, 2: 2, 3: 3}
+
+        string = {0: "nodes", 1: "edges", 2: "faces", 3: "volumes"}
+        entity_num = self.num[entity_type]
+        if entity_num == 0:
             self.elements_handle = core.all_nodes
             self.internal_elements = core.internal_nodes
             self.boundary_elements = core.boundary_nodes
             self.vID = 0
-        elif entity_type  == "edges":
+        elif entity_num == 1:
             self.elements_handle = core.all_edges
             self.internal_elements = core.internal_edges
             self.boundary_elements = core.boundary_edges
             self.vID = 1
-        elif entity_type == "faces":
+        elif entity_num == 2:
             self.elements_handle = core.all_faces
             self.internal_elements = core.internal_faces
             self.boundary_elements = core.boundary_faces
             self.vID = 2
-        elif entity_type == "volumes":
+        elif entity_num == 3:
             self.elements_handle = core.all_volumes
             self.internal_elements = core.internal_volumes
             self.boundary_elements = core.boundary_volumes
             self.vID = 3
+        self.entity_type = string[entity_num]
         self.tag_handle = core.handleDic["GLOBAL_ID"]
         self.t_range_vec = self.elements_handle
         self.adjacencies = GetItem(self._adjacencies)
 
-
         print("Mesh Entity type {0} successfully intialized".format(entity_type))
 
-    def adjacencies_bridge(self,index, interface, target ):
+    def adjacencies_bridge(self, index, interface, target):
         # lacks support for indexing with multiple numbers
-
-        num = {"nodes": 0, "node": 0, "edges": 1, "edge": 1, "faces": 2, "face": 2, "volumes": 3, "volume": 3}
         range_vec = self.create_range_vec(index)
-        all_bridge =  self.mtu.get_bridge_adjacencies(range_vec, num[interface], num[target])
-        # filtering with entities belonging only to the meshset of the class
+        all_bridge = [self.mtu.get_bridge_adjacencies(el_handle, self.num[interface], self.num[target]) for el_handle
+                      in self.range_index(range_vec)]
         inside_meshset = self.mb.get_entities_by_handle(self.meshset)
-        return rng.intersect(all_bridge,inside_meshset)
-
-
+        all_brige_in_meshset = [rng.intersect(el_handle, inside_meshset) for el_handle in all_bridge]
+        all_briges_in_meshset_id = np.array([self.read(el_handle) for el_handle in all_brige_in_meshset])
+        return all_briges_in_meshset_id
 
     def _adjacencies(self, index):
         range_vec = self.create_range_vec(index)
@@ -114,6 +115,15 @@ class MeshEntities(object):
             vec = vec_index.astype("uint")
         handles = np.asarray(range_handle)[vec.astype("uint")].astype("uint")
         return rng.Range(handles)
+
+    def __str__(self):
+        string = "{0} variable: {1} based - {2} type - {3} length - data {4}".format(self.name_tag, self.var_type,
+                                                                                     self.data_format, self.data_size,
+                                                                                     self.data_density)
+        return string
+
+    def __len__(self):
+        return len(self.elements_handle)
 
     def __call__(self):
         return self.all
@@ -179,9 +189,6 @@ class MoabVariable(object):
         self.tag_handle = self.mb.tag_get_handle(name_tag, data_size, data_format, data_density, True)
         print("Component class {0} successfully intialized".format(self.name_tag))
 
-
-
-
     def __call__(self):
         return self.mb.tag_get_data(self.tag_handle, self.elements_handle)
 
@@ -195,7 +202,6 @@ class MoabVariable(object):
             data = np.array(data)
             data = data * np.tile(data,(range_vec.shape[0],1)).astype(self.data_format)
         self.set_data(data, index_vec = range_vec)
-
 
     def __getitem__(self, index):
         range_vec = self.create_range_vec(index)
