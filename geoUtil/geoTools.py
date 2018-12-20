@@ -87,6 +87,73 @@ def hexahedronVolume(hexa_nodes):
     hexa_vol = (volume1+volume2+volume3)/6
     return (hexa_vol)
 
+def triangle_area(face_nodes):
+    #
+    #     P1
+    #     |\
+    #    |  \
+    #   |____\
+    # P0      P2
+
+    vector[0] = face_nodes[0]-face_nodes[1]
+    vector[1] = face_nodes[0]-face_nodes[2]
+    vector[2] = face_nodes[1]-face_nodes[2]
+
+    for i in range (3):
+        norm[i] = np.linalg.norm(vector[i])
+
+    semi_perimeter = (norm[0]+norm[1]+norm[2])/2
+
+    triangle_area = np.sqrt(semi_perimeter*(semi_perimeter-norm[0])*(semi_perimeter-norm[1])*(semi_perimeter-norm[2]))
+
+    return(triangle_area)
+
+
+def quadrilateral_area(face_nodes):
+
+    #
+    # P1 _____P2
+    #   |    |
+    #   |    |
+    #   |____|
+    # P0      P3
+    #
+
+    #  NOTE:
+    # The given quadrilateral may be irregular
+    # The method used here includes this possibility
+    # The sketch above describes the connectivities
+    # Heron's formula is being used here. The
+    # quadrilateral was splitted in two triangles
+    #
+    # Input:
+    # A Matrix with 4x3 elements in which
+    # each line is one of the 4 nodes that
+    # a given hexahedron. The sequence of
+    # the nodes in the matrix must be the
+    # same as the figure.
+    #
+    # Ouput:
+    # The volume of the given hexahedron
+
+    vector[0] = face_nodes[0]-face_nodes[1]
+    vector[1] = face_nodes[0]-face_nodes[3]
+    vector[2] = face_nodes[1]-face_nodes[3] # Intersection
+    vector[3] = face_nodes[2]-face_nodes[3]
+    vector[4] = face_nodes[2]-face_nodes[1]
+
+    for i in range (5):
+        norm[i] = np.linalg.norm(vector[i])
+
+    semi_perimeter1 = (norm[0]+norm[1]+norm[2])/2
+    semi_perimeter2 = (norm[3]+norm[4]+norm[2])/2
+
+    area1 = np.sqrt(semi_perimeter1*(semi_perimeter1-norm[0])*(semi_perimeter1-norm[1])*(semi_perimeter1-norm[2]))
+    area2 = np.sqrt(semi_perimeter2*(semi_perimeter2-norm[3])*(semi_perimeter2-norm[4])*(semi_perimeter2-norm[2]))
+
+    quadrilateral_area = area1 + area2
+    return(quadrilateral_area)
+
 def teste():
     print("Entrou")
     pass
