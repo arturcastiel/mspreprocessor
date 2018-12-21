@@ -16,7 +16,7 @@ from pymoab import core, types, rng, topo_util
 
 
 start = time. time()
-M = msh("semi.msh")
+M = msh("malha01.msh", dim = 2)
 vec = np.arange(len(M.alma)).astype(int)
 # M.core.print()
 end = time. time()

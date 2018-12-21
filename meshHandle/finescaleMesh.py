@@ -10,7 +10,7 @@ from . meshComponents import MoabVariable, MeshEntities
 print('Standard fine-scale mesh loaded: No multiscale components available')
 class FineScaleMesh:
     def __init__(self,mesh_file, dim=3):
-        self.core = CoreMoab(mesh_file)
+        self.core = CoreMoab(mesh_file, dim)
         self.alma = MoabVariable(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="alma")
 
         self.nodes = MeshEntities(self.core, entity_type = "node")
@@ -24,7 +24,7 @@ class FineScaleMesh:
         self.ama = MoabVariable(self.core,data_size=1,var_type= "faces",  data_format="float", name_tag="ama",
                                 entity_index= self.faces.boundary, data_density="dense")
 
-        self.arma = MoabVariable(self.core,data_size=3,var_type= "nodes",  data_format="float", name_tag="arma",
+        self.arma = MoabVariable(self.core,data_size=1,var_type= "faces",  data_format="float", name_tag="arma",
                                  data_density="sparse")
         #pdb.set_trace()
 

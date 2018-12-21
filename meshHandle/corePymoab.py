@@ -11,12 +11,12 @@ class CoreMoab:
         self.root_set = self.mb.get_root_set()
         self.mtu = topo_util.MeshTopoUtil(self.mb)
         self.mb.load_file(mesh_file)
-        self.all_volumes = self.mb.get_entities_by_dimension(0, self.dimension)
+        self.all_volumes = self.mb.get_entities_by_dimension(0, 3)
         self.all_nodes = self.mb.get_entities_by_dimension(0, 0)
         self.mtu.construct_aentities(self.all_nodes)
-        self.all_faces = self.mb.get_entities_by_dimension(0, self.dimension-1)
-        self.all_edges = self.mb.get_entities_by_dimension(0, self.dimension-2)
-
+        self.all_faces = self.mb.get_entities_by_dimension(0, 2)
+        self.all_edges = self.mb.get_entities_by_dimension(0, 1)
+        pdb.set_trace()
         self.handleDic = {}
         [self.boundary_nodes, self.boundary_edges, self.boundary_faces, self.boundary_volumes] = self.skinner_operation()
 
@@ -57,30 +57,44 @@ class CoreMoab:
     def skinner_operation(self):
         skin = sk.Skinner(self.mb)
         print("Entering skinner test")
-        faces_on_skin_handles = skin.find_skin(self.root_set, self.all_volumes[:])
-        # pdb.set_trace()
-        edges_on_skin_handles = self.access_handle(faces_on_skin_handles)
-        nodes_on_skin_handles = self.access_handle(edges_on_skin_handles)
+        pdb.set_trace()
 
-        nodes_in_volumes = ([self.mb.get_adjacencies(el_handle,0) for el_handle in self.all_volumes])
-        check_volumes = np.asarray([rng.intersect(el_handle,nodes_on_skin_handles) for el_handle in nodes_in_volumes])
-        external_volumes_index = np.array([el_handle.empty() for el_handle in check_volumes]).astype(bool)
-        volumes_on_skin_handles = self.range_index(np.bitwise_not(external_volumes_index),self.all_volumes)
-        #
+        if self.dimension == 3:
+            faces_on_skin_handles = skin.find_skin(self.root_set, self.all_volumes[:])
+            # pdb.set_trace()
+            edges_on_skin_handles = self.access_handle(faces_on_skin_handles)
+            nodes_on_skin_handles = self.access_handle(edges_on_skin_handles)
+
+            nodes_in_volumes = ([self.mb.get_adjacencies(el_handle,0) for el_handle in self.all_volumes])
+            check_volumes = np.asarray([rng.intersect(el_handle,nodes_on_skin_handles) for el_handle in nodes_in_volumes])
+            external_volumes_index = np.array([el_handle.empty() for el_handle in check_volumes]).astype(bool)
+            volumes_on_skin_handles = self.range_index(np.bitwise_not(external_volumes_index),self.all_volumes)
+
+
+        elif self.dimension == 2:
+            edges_on_skin_handles = skin.find_skin(self.root_set, self.all_faces[:])
+            nodes_on_skin_handles = self.access_handle(edges_on_skin_handles)
+            nodes_in_faces = ([self.mb.get_adjacencies(el_handle,0) for el_handle in self.all_faces])
+            check_faces= np.asarray([rng.intersect(el_handle,nodes_on_skin_handles) for el_handle in nodes_in_faces])
+            external_faces_index = np.array([el_handle.empty() for el_handle in check_faces]).astype(bool)
+            faces_on_skin_handles = self.range_index(np.bitwise_not(external_faces_index),self.all_faces)
+            volumes_on_skin_handles = rng.Range()
+
         print("Skinning Operation Successful")
+        return [nodes_on_skin_handles, edges_on_skin_handles, faces_on_skin_handles, volumes_on_skin_handles]
 
         #
-        self.create_tag_handle("SKINPOINT",1, "int", data_density="sparse")
-        self.create_tag_handle("SKINEDGES", 1, "int", data_density="sparse")
-        self.create_tag_handle("SKINFACES", 1, "int", data_density="sparse")
-        self.create_tag_handle("SKINVOLUMES", 1, "int", data_density="sparse")
-
-        self.set_data("SKINPOINT", 200 * np.ones(len(nodes_on_skin_handles)).astype(int),range_el=nodes_on_skin_handles)
-        self.set_data("SKINEDGES", 300 * np.ones(len(edges_on_skin_handles)).astype(int),range_el=edges_on_skin_handles)
-        self.set_data("SKINFACES", 400 * np.ones(len(faces_on_skin_handles)).astype(int),range_el=faces_on_skin_handles)
-        self.set_data("SKINVOLUMES", 800 * np.ones(len(volumes_on_skin_handles)).astype(int),range_el=volumes_on_skin_handles)
-
-        return [nodes_on_skin_handles, edges_on_skin_handles, faces_on_skin_handles, volumes_on_skin_handles]
+        # self.create_tag_handle("SKINPOINT",1, "int", data_density="sparse")
+        # self.create_tag_handle("SKINEDGES", 1, "int", data_density="sparse")
+        # self.create_tag_handle("SKINFACES", 1, "int", data_density="sparse")
+        # self.create_tag_handle("SKINVOLUMES", 1, "int", data_density="sparse")
+        #
+        # self.set_data("SKINPOINT", 200 * np.ones(len(nodes_on_skin_handles)).astype(int),range_el=nodes_on_skin_handles)
+        # self.set_data("SKINEDGES", 300 * np.ones(len(edges_on_skin_handles)).astype(int),range_el=edges_on_skin_handles)
+        # self.set_data("SKINFACES", 400 * np.ones(len(faces_on_skin_handles)).astype(int),range_el=faces_on_skin_handles)
+        # self.set_data("SKINVOLUMES", 800 * np.ones(len(volumes_on_skin_handles)).astype(int),range_el=volumes_on_skin_handles)
+        #
+        # return [nodes_on_skin_handles, edges_on_skin_handles, faces_on_skin_handles, volumes_on_skin_handles]
 
     def check_integrity(self):
         # check if the mesh contains
@@ -356,6 +370,8 @@ class CoreMoab:
         text6 = text + "-together" + extension
         self.mb.write_file(text1, [m1])
         self.mb.write_file(text2, [m2])
-        self.mb.write_file(text3, [m3])
+        if self.dimension == 3:
+            self.mb.write_file(text3, [m3])
+
         self.mb.write_file(text4, [m4])
         self.mb.write_file(text5)
