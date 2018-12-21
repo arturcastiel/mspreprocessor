@@ -1,7 +1,9 @@
 import time
 import numpy as np
 from pymoab import core, types, rng
+from geoUtil import geoTools
 
+gf = geoTools.geometric_functionalities()
 mbcore = core.Core()
 
 num_elem_z = 1
@@ -39,7 +41,9 @@ coord[5] = coord[7]
 coord[7] = coord[6]
 coord[6] = temp
 '''
-
+volume = gf.hexahedron_volume(coord)
+print(volume)
+'''
 # Method TH
 inicio1 = time.time()
 vector = np.cross(((coord[7]-coord[1])+(coord[6]-coord[0])), (coord[7]-coord[2]))
@@ -69,3 +73,4 @@ volume2 = (vetor+vetor2+vetor3)/6
 
 print(final1-inicio1)
 print(final2-inicio2)
+'''
