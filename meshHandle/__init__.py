@@ -7,7 +7,7 @@
 #shManager.py
 
 
-print('Inicializando Mesh Manager')
+print('meshHandle module intialized')
 #from meshManager.py import MeshManager as ms
 
 #from .Structured import Preprocessor as Structured

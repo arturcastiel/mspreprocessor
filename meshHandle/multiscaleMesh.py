@@ -29,6 +29,7 @@ class FineScaleMeshMS(FineScaleMesh):
             used_attributes = []
             for at in specific_attributes:
                 used_attributes.append(float(at[1]))
+            used_attributes = [int(el) for el in used_attributes]
             part_tag = getattr(msCoarseningLib.algoritmo, name_function)(self.core.read_data("CENTER"),
                        len(self.core.all_volumes), self.rx, self.ry, self.rz,*used_attributes)
             self.core.create_tag_handle("PARTITION", 1, data_text="int")

@@ -1,6 +1,7 @@
 
 
 import numpy as np
+from numba import jit
 import pdb
 
 
@@ -12,8 +13,6 @@ import pdb
 #a função tagAdjust remove renumera os elementos da malha coarse de maneira que eles permanecam
 # continuos contando de 0 ao N de volumes coarse, a função tb remover os centros indesejados
 
-
-
 #para adicionar novos esquemas basta criar um esquema com numeracao sequencial
 #ex. scheme2  , mais shceme3
 #a seção campo de leitura do arquivo msCoarse.ini deverá ter nome correspondente
@@ -22,6 +21,7 @@ import pdb
 #por default a leitura dos elementos é float, caso necessário. converta para int
 #ex int(nx)
 
+@jit
 def scheme1(centerCoord, num_of_vol, rx,ry,rz ,nx = 3, ny = 3, nz =3 ):
     #input : centerCoord - > array with the center of elements
     #        num_of_vol = number of volumes
@@ -30,9 +30,9 @@ def scheme1(centerCoord, num_of_vol, rx,ry,rz ,nx = 3, ny = 3, nz =3 ):
     #        nx, ny, nz
     # msh -> objeto da clase meshUtil
     #centerCoord = msh.readData("CENTER")
-    nx = int(nx)
-    ny = int(ny)
-    nz = int(nz)
+    # nx = int(nx)
+    # ny = int(ny)
+    # nz = int(nz)
     box = np.array([0, (rx[1] - rx[0])/nx, 0,(ry[1] - ry[0]) /ny, 0,(rz[1] - rz[0])/(nz+0)]).reshape(3,2)
     cent_coord_El1 = box.sum(axis =1)/2
     tag = np.zeros(num_of_vol).astype("int")
@@ -119,7 +119,9 @@ def scheme3(centerCoord, num_of_vol, rx,ry,rz ,nx = 3, ny = 3, nz =3 ):
 
 
 #checa se um ponto esta dentro de um cubo
-def checkinBox(coords, x = (1,2), y = (2,3), z = (3,4)):
+
+@jit(parallel=True)
+def checkinBox(coords, x , y, z):
     tag1 = (coords[:,0] > x[0])   &  (coords[:,0] < x[1])
     tag2 = (coords[:,1] > y[0])   &  (coords[:,1] < y[1])
     tag3 = (coords[:,2] > z[0])   &  (coords[:,2] < z[1])
@@ -129,6 +131,7 @@ def checkinBox(coords, x = (1,2), y = (2,3), z = (3,4)):
 
 #função para corrigir os tags em caso que as malhas geradoras possuam volumes grossos sem celulas dentro
 #e remover as respectivas coordenadas do centro dos volumes das malhas primais
+#  @jit(parallel=True, cache=True)
 def tagAdjust(tag, coarseCenter):
     # msh -> objeto da clase meshUtil
     fineTag =  tag

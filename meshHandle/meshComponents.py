@@ -8,7 +8,7 @@ class GetItem(object):
         self.fun = adj
 
     def __call__(self, item):
-        return self.funj(item)
+        return self.fun(item)
 
     def __getitem__(self, item):
         return self.fun(item)
@@ -19,6 +19,7 @@ class MeshEntities(object):
         self.mb = core.mb
         self.mtu = core.mtu
         self.meshset = core.root_set
+        self.nodes = core.all_nodes
         self.num = {"nodes": 0, "node": 0, "edges": 1, "edge": 1, "faces": 2, "face": 2, "volumes": 3, "volume": 3,
                     0: 0, 1: 1, 2: 2, 3: 3}
         string = {0: "nodes", 1: "edges", 2: "faces", 3: "volumes"}
@@ -45,7 +46,11 @@ class MeshEntities(object):
             self.vID = 3
         self.entity_type = string[entity_num]
         self.tag_handle = core.handleDic["GLOBAL_ID"]
-        self.adjacencies = GetItem(self._adjacencies)
+        if self.vID == 0:
+            self.adjacencies = GetItem(self._adjacencies_for_nodes)
+            self.coords =  GetItem(self._coords)
+        else:
+            self.adjacencies = GetItem(self._adjacencies)
 
         # initialize specific flag dic in accordance with type of the object create
         self.flag = {key: self.read(value[self.vID]) for key, value in core.flag_dic.items()
@@ -53,9 +58,6 @@ class MeshEntities(object):
 
         print("Mesh Entity type {0} successfully initialized".format(entity_type))
 
-    @property
-    def all_flags(self):
-        return np.array(list(self.flag.keys())).astype(int)
 
     def bridge_adjacencies(self, index, interface, target):
         # lacks support for indexing with multiple numbers
@@ -67,9 +69,20 @@ class MeshEntities(object):
         all_briges_in_meshset_id = np.array([self.read(el_handle) for el_handle in all_brige_in_meshset])
         return all_briges_in_meshset_id
 
-    def _adjacencies(self, index):
+    def _coords(self, index):
         range_vec = self.create_range_vec(index)
-        dim_tag = self.vID - 1
+        element_handle = self.range_index(range_vec, True)
+        return np.reshape(self.mb.get_coords(element_handle),(-1,3))
+
+    def _adjacencies_for_nodes(self, index):
+        return self.create_range_vec(index)
+
+    def _adjacencies(self, index,flag_nodes=False):
+        range_vec = self.create_range_vec(index)
+        if not flag_nodes:
+            dim_tag = self.vID - 1
+        else:
+            dim_tag = 0
         all_adj = [self.mb.get_adjacencies(el_handle, dim_tag) for el_handle in self.range_index(range_vec)]
         adj_id = np.array([self.read(el_handle) for el_handle in all_adj])
         return adj_id
@@ -102,8 +115,11 @@ class MeshEntities(object):
             range_vec = np.array(index)
         return range_vec
 
-    def range_index(self, vec_index):
-        range_handle = self.elements_handle
+    def range_index(self, vec_index, flag_nodes=False):
+        if not flag_nodes:
+            range_handle = self.elements_handle
+        else:
+            range_handle = self.nodes
         if vec_index.dtype == "bool":
             vec = np.where(vec_index)[0]
         else:
@@ -124,6 +140,14 @@ class MeshEntities(object):
 
     def read(self, handle):
         return self.mb.tag_get_data(self.tag_handle, handle).ravel()
+
+    @property
+    def all_flagged_elements(self):
+        return np.array(  list(self.flag.values())).astype(int)
+
+    @property
+    def all_flags(self):
+        return np.array(list(self.flag.keys())).astype(int)
 
     @property
     def all(self):
