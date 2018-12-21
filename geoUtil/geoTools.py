@@ -19,7 +19,7 @@ def tetraVolume(tet_nodes):
     vol_eval = abs(np.dot(np.cross(vect_1, vect_2), vect_3))/6
     return vol_eval
 
-def piramidVolume(pi_nodes):
+def piramidVolume(pi_nodes): # NÃO ATENDE A TODOS TIPOS DE PIRÂMIDE
     #     P5           P4 _____ P3
     #     /\             |     |
     #    /  \            |     |
