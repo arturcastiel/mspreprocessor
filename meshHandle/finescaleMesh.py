@@ -12,72 +12,30 @@ class FineScaleMesh:
     def __init__(self,mesh_file, dim=3):
         self.core = CoreMoab(mesh_file, dim)
         self.alma = MoabVariable(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="alma")
-
         self.nodes = MeshEntities(self.core, entity_type = "node")
-
         self.edges = MeshEntities(self.core, entity_type="edges")
-
         self.faces = MeshEntities(self.core, entity_type = "faces")
-
-        self.volumes = MeshEntities(self.core, entity_type = "volumes")
-
+        if dim == 3:
+            self.volumes = MeshEntities(self.core, entity_type = "volumes")
         self.ama = MoabVariable(self.core,data_size=1,var_type= "faces",  data_format="float", name_tag="ama",
                                 entity_index= self.faces.boundary, data_density="dense")
-
         self.arma = MoabVariable(self.core,data_size=1,var_type= "faces",  data_format="float", name_tag="arma",
                                  data_density="sparse")
         #pdb.set_trace()
 
-        self.init_center()
-        self.init_volume()
-        self.init_normal()
+        # self.init_center()
+        # self.init_volume()
+        # self.init_normal()
         self.macro_dim()
 
-        #self.init_BC()
-        # Iniciar condições de contorno
-        self.dirichlet_faces = set()
-        self.neumann_faces = set()
 
     def macro_dim(self):
-        coords = self.core.mb.get_coords(self.core.all_nodes).reshape(len(self.core.all_nodes),3)
-        self.rx = (coords[:,0].min(), coords[:,0].max())
-        self.ry = (coords[:,1].min(), coords[:,1].max())
-        self.rz = (coords[:,2].min(), coords[:,2].max())
-
-
-    def init_bc(self):
-        print("Inicializando BC")
-        physical_tag = self.core.mb.tag_get_handle("MATERIAL_SET")
-        dirchlet_tag = self.core.mb.tag_get_handle("DIRICHLET_SET")
-        neumamn_tag = self.core.mb.tag_get_handle("NEUMANN_SET")
-        physical_sets = self.core.mb.get_entities_by_type_and_tag(
-            0, types.MBENTITYSET, np.array(
-            (physical_tag,)), np.array((None,)))
-
-        dirichtlet_sets = self.core.mb.get_entities_by_type_and_tag(
-            0, types.MBENTITYSET, np.array(
-            (dirchlet_tag,)), np.array((None,)))
-
-        neumamn_sets = self.core.mb.get_entities_by_type_and_tag(
-            0, types.MBENTITYSET, np.array(
-            (neumamn_tag,)), np.array((None,)))
-
-        print(dirichtlet_sets)
-        print(neumamn_sets)
-        print(physical_sets)
-
-        #bunda_tag = self.core.mb.tag_get_handle("BUNDA")
-
-        self.core.handleDic["MATERIAL_SET"] = physical_tag
-        self.core.handleDic["DIRICHLET_SET"] = dirchlet_tag
-
-        self.core.handleDic["NEUMANN_SET"] = neumamn_tag
-        #self.core.handleDic["BUNDA"] = bunda_tag
-        #pdb.set_trace()
-        print(physical_tag)
-        print(dirchlet_tag)
-        print(neumamn_tag)
-
+        # coords = self.core.mb.get_coords(self.core.all_nodes).reshape(len(self.core.all_nodes),3)
+        min_coord = self.nodes.coords[:].min(axis = 0)
+        max_coord  = self.nodes.coords[:].max(axis = 0)
+        self.rx = (min_coord[0], max_coord[0])
+        self.ry = (min_coord[1], max_coord[1])
+        self.rz= (min_coord[2], max_coord[2])
 
 
     def init_center(self):

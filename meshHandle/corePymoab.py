@@ -16,7 +16,6 @@ class CoreMoab:
         self.mtu.construct_aentities(self.all_nodes)
         self.all_faces = self.mb.get_entities_by_dimension(0, 2)
         self.all_edges = self.mb.get_entities_by_dimension(0, 1)
-        pdb.set_trace()
         self.handleDic = {}
         [self.boundary_nodes, self.boundary_edges, self.boundary_faces, self.boundary_volumes] = self.skinner_operation()
 
@@ -57,7 +56,6 @@ class CoreMoab:
     def skinner_operation(self):
         skin = sk.Skinner(self.mb)
         print("Entering skinner test")
-        pdb.set_trace()
 
         if self.dimension == 3:
             faces_on_skin_handles = skin.find_skin(self.root_set, self.all_volumes[:])

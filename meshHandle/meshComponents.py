@@ -52,6 +52,7 @@ class MeshEntities(object):
         else:
             self.adjacencies = GetItem(self._adjacencies)
 
+        self.classify_element = GetItem(self._classify_element)
         # initialize specific flag dic in accordance with type of the object create
         self.flag = {key: self.read(value[self.vID]) for key, value in core.flag_dic.items()
                      if value[self.vID].empty() is not True}
@@ -114,6 +115,12 @@ class MeshEntities(object):
         elif isinstance(index, list):
             range_vec = np.array(index)
         return range_vec
+
+    def _classify_element(self, index):
+        range_vec = self.create_range_vec(index)
+        range = self.range_index(range_vec)
+        type_list = np.array([self.mb.type_from_handle(el) for el in range])
+        return  type_list
 
     def range_index(self, vec_index, flag_nodes=False):
         if not flag_nodes:

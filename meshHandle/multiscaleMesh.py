@@ -16,7 +16,7 @@ class FineScaleMeshMS(FineScaleMesh):
     def __init__(self,mesh_file, dim=3):
         super().__init__(mesh_file,dim)
 
-        self.init_partition()
+        # self.init_partition()
 
     def init_partition(self):
         config = self.read_config()
@@ -31,7 +31,7 @@ class FineScaleMeshMS(FineScaleMesh):
                 used_attributes.append(float(at[1]))
             used_attributes = [int(el) for el in used_attributes]
             part_tag = getattr(msCoarseningLib.algoritmo, name_function)(self.core.read_data("CENTER"),
-                       len(self.core.all_volumes), self.rx, self.ry, self.rz,*used_attributes)
+                       len(self.core.all_faces), self.rx, self.ry, self.rz,*used_attributes)
             self.core.create_tag_handle("PARTITION", 1, data_text="int")
             self.core.set_data("PARTITION",part_tag[0])
 
@@ -39,4 +39,3 @@ class FineScaleMeshMS(FineScaleMesh):
         config_file = cp.ConfigParser()
         config_file.read(config_input)
         return config_file
-

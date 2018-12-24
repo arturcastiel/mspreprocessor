@@ -21,7 +21,6 @@ import pdb
 #por default a leitura dos elementos é float, caso necessário. converta para int
 #ex int(nx)
 
-@jit
 def scheme1(centerCoord, num_of_vol, rx,ry,rz ,nx = 3, ny = 3, nz =3 ):
     #input : centerCoord - > array with the center of elements
     #        num_of_vol = number of volumes
@@ -50,6 +49,7 @@ def scheme1(centerCoord, num_of_vol, rx,ry,rz ,nx = 3, ny = 3, nz =3 ):
                 point = checkinBox(centerCoord,x=(boxMin[0], boxMax[0]), y=(boxMin[1], boxMax[1]) , z=(boxMin[2], boxMax[2]))
                 tag[point] = index
                 index += 1
+    pdb.set_trace()
     return tagAdjust(tag,coarseCenters)
 
 
