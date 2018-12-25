@@ -24,9 +24,16 @@ print("Execution time for a 3d mesh with {0} elements: {1} seconds".format(len(M
 
 
 start = time. time()
-M.core.print()
+#M.core.print()
 end = time. time()
 print("Printing Routine Time: {}".format(end-start))
+
+
+start = time. time()
+M.edges.center[:]
+end = time. time()
+print("Printing Routine Time: {}".format(end-start))
+
 # vec2 = np.array([vec,vec,vec]).T
 # #M.alma.set_data(vec2)
 # M.alma[:] = vec2

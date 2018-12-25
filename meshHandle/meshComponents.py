@@ -53,10 +53,11 @@ class MeshEntities(object):
             self.adjacencies = GetItem(self._adjacencies)
 
         self.classify_element = GetItem(self._classify_element)
+        self.center = GetItem(self._center)
+
         # initialize specific flag dic in accordance with type of the object create
         self.flag = {key: self.read(value[self.vID]) for key, value in core.flag_dic.items()
                      if value[self.vID].empty() is not True}
-
         print("Mesh Entity type {0} successfully initialized".format(entity_type))
 
 
@@ -87,6 +88,20 @@ class MeshEntities(object):
         all_adj = [self.mb.get_adjacencies(el_handle, dim_tag) for el_handle in self.range_index(range_vec)]
         adj_id = np.array([self.read(el_handle) for el_handle in all_adj])
         return adj_id
+
+    def _center(self,index):
+        range_vec = self.create_range_vec(index)
+        classified_elements = self.classify_element(range_vec)
+        centers = np.zeros(( np.shape(range_vec)[0],3 ))
+
+        node_elements = (classified_elements == types.MBVERTEX)
+        edges_elements = (classified_elements == types.MBEDGE)
+
+        centers[node_elements] = self._coords(range_vec[node_elements])
+        edges_adj = self.adjacencies[range_vec[edges_elements]]
+        centers[edges_elements]  = 0.5* (self._coords(edges_adj[:,0]) + self._coords(edges_adj[:,1]))
+
+        return centers
 
     def create_range_vec(self, index):
         range_vec = None
@@ -132,7 +147,8 @@ class MeshEntities(object):
         else:
             vec = vec_index.astype("uint")
         handles = np.asarray(range_handle)[vec.astype("uint")].astype("uint")
-        return rng.Range(handles)
+        return handles
+        # return rng.Range(handles)
 
     def __str__(self):
         string = "{0} object \n Total of {1} {0} \n {2}  boundary {0} \n {3} internal {0}".format(self.entity_type,
