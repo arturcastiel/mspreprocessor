@@ -1,3 +1,4 @@
+
 import time
 import pdb
 import numpy as np
@@ -158,6 +159,3 @@ class FineScaleMesh:
         dist_vector = coords_1 - coords_2
         distance = sqrt(np.dot(dist_vector, dist_vector))
         return distance
-
-
-#--------------Início dos parâmetros de entrada-------------------
