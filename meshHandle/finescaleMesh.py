@@ -11,7 +11,9 @@ from . meshComponents import MoabVariable, MeshEntities
 print('Standard fine-scale mesh loaded: No multiscale components available')
 class FineScaleMesh:
     def __init__(self,mesh_file, dim=3):
+        self.dim = dim
         self.core = CoreMoab(mesh_file, dim)
+
         self.alma = MoabVariable(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="alma")
         self.nodes = MeshEntities(self.core, entity_type = "node")
         self.edges = MeshEntities(self.core, entity_type="edges")
@@ -31,6 +33,11 @@ class FineScaleMesh:
         # self.init_normal()
         self.macro_dim()
 
+    def __len__(self):
+        if self.dim == 3:
+            return len(self.volumes)
+        elif self.dim ==2:
+            return len(self.faces)
 
     def macro_dim(self):
         # coords = self.core.mb.get_coords(self.core.all_nodes).reshape(len(self.core.all_nodes),3)

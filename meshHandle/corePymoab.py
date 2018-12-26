@@ -100,6 +100,9 @@ class CoreMoab:
         list_words = ['Nodes', "Edges", "Faces", "Volumes"]
         print("Checking mesh integrity:")
         index = 0
+        if self.dimension == 2:
+            list_words = list_words[:-1]
+            check_list = check_list[:-1]
         for entity in check_list:
             if entity > 0:
                 print(list_words[index] + " successfully imported")
