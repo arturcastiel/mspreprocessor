@@ -1,5 +1,6 @@
 import numpy as np
 from pymoab import types, rng
+import geoUtil.geoTools as gtool
 import pdb
 
 
@@ -51,6 +52,7 @@ class MeshEntities(object):
             self.coords =  GetItem(self._coords)
         else:
             self.adjacencies = GetItem(self._adjacencies)
+            self.connectivities = GetItem(self._connectivities)
 
         self.classify_element = GetItem(self._classify_element)
         self.center = GetItem(self._center)
@@ -91,17 +93,73 @@ class MeshEntities(object):
 
     def _center(self,index):
         range_vec = self.create_range_vec(index)
-        classified_elements = self.classify_element(range_vec)
         centers = np.zeros(( np.shape(range_vec)[0],3 ))
-
-        node_elements = (classified_elements == types.MBVERTEX)
-        edges_elements = (classified_elements == types.MBEDGE)
-
-        centers[node_elements] = self._coords(range_vec[node_elements])
-        edges_adj = self.adjacencies[range_vec[edges_elements]]
-        centers[edges_elements]  = 0.5* (self._coords(edges_adj[:,0]) + self._coords(edges_adj[:,1]))
-
+        if self.vID == 0:
+            centers = self._coords(range_vec)
+        elif self.vID == 1:
+            edges_adj = self.connectivities[range_vec]
+            centers  = 0.5* (self._coords(edges_adj[:,0]) + self._coords(edges_adj[:,1]))
+        elif self.vID == 2:
+            classified_elements = self.classify_element(range_vec)
+            tri_face = (classified_elements == types.MBTRI)
+            quad_face = (classified_elements == types.MBQUAD)
+            poly_face = (classified_elements == types.MBPOLYGON)
+            tri_faces_adj = self.connectivities[range_vec[tri_face]]
+            if tri_face.sum() != 0:
+                centers[tri_face] = gtool.get_average([self._coords(tri_faces_adj[:,col]) for col in range(tri_faces_adj.shape[1])])
+            if quad_face.sum() != 0:
+                quad_faces_adj = self.connectivities[range_vec[quad_face]]
+                centers[quad_face] = gtool.get_average([self._coords(quad_faces_adj[:,col]) for col in range(quad_faces_adj.shape[1])])
+            if poly_face.sum() != 0:
+                poly_faces_adj = self.connectivities[range_vec[poly_face]]
+                centers[poly_face] = gtool.get_average([self._coords(poly_faces_adj[:,col]) for col in range(poly_faces_adj.shape[1])])
+        elif self.vID == 3:
+            classified_elements = self.classify_element(range_vec)
+            tetra_volume = (classified_elements == types.MBTET)
+            pyramid_volume = (classified_elements == types.MBPYRAMID)
+            prism_volume = (classified_elements == types.MBPRISM)
+            knife_volume = (classified_elements == types.MBKNIFE)
+            hex_volume = (classified_elements == types.MBHEX)
+            if tetra_volume.sum() != 0:
+                tetra_volumes_adj = self.connectivities[range_vec[tetra_volume]]
+                centers[tetra_volume] = gtool.get_average([self._coords(tetra_volumes_adj[:,col]) for col in range(tetra_volumes_adj.shape[1])])
+            if pyramid_volume.sum() != 0:
+                pyramid_volumes_adj = self.connectivities[range_vec[pyramid_volume]]
+                centers[pyramid_volume] = gtool.get_average([self._coords(pyramid_volumes_adj[:,col]) for col in range(pyramid_volumes_adj.shape[1])])
+            if prism_volume.sum() != 0:
+                prism_volumes_adj = self.connectivities[range_vec[prism_volume]]
+                centers[prism_volume] = gtool.get_average([self._coords(prism_volumes_adj[:,col]) for col in range(prism_volumes_adj.shape[1])])
+            if knife_volume.sum() != 0:
+                knife_volumes_adj = self.connectivities[range_vec[knife_volume]]
+                centers[knife_volume] = gtool.get_average([self._coords(knife_volumes_adj[:,col]) for col in range(knife_volumes_adj.shape[1])])
+            if hex_volume.sum() != 0:
+                hex_volumes_adj = self.connectivities[range_vec[hex_volume]]
+                centers[hex_volume] = gtool.get_average([self._coords(hex_volumes_adj[:,col]) for col in range(hex_volumes_adj.shape[1])])
         return centers
+            #
+            # volumetype = (type_list == types.MBTET) | (type_list == types.MBPYRAMID) | (type_list == types.MBPRISM) | \
+            #              (type_list == types.MBKNIFE) | (type_list == types.MBHEX) | (type_list == types.MBPOLYHEDRON)
+            # meshsettype = type_list == types.MBENTITYSET
+
+
+        #
+        # classified_elements = self.classify_element(range_vec)
+        #
+        # node_elements = (classified_elements == types.MBVERTEX)
+        # edges_elements = (classified_elements == types.MBEDGE)
+        #
+        # centers[node_elements] = self._coords(range_vec[node_elements])
+        # edges_adj = self.adjacencies[range_vec[edges_elements]]
+        # centers[edges_elements]  = 0.5* (self._coords(edges_adj[:,0]) + self._coords(edges_adj[:,1]))
+
+
+
+    def _connectivities(self,index):
+        connectivities_id = None
+        range_vec = self.create_range_vec(index)
+        all_connectivities = [self.mb.get_connectivity(el_handle) for el_handle in self.range_index(range_vec)]
+        connectivities_id = np.array([self.read(el_handle) for el_handle in all_connectivities])
+        return connectivities_id
 
     def create_range_vec(self, index):
         range_vec = None

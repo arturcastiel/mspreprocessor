@@ -16,7 +16,7 @@ class FineScaleMeshMS(FineScaleMesh):
     def __init__(self,mesh_file, dim=3):
         super().__init__(mesh_file,dim)
 
-        # self.init_partition()
+        #self.init_partition()
 
     def init_partition(self):
         config = self.read_config()
