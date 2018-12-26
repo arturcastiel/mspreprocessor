@@ -9,8 +9,48 @@ import pdb
 from numba import jit
 
 # class for volume related problem
+    #
+    # def init_normal(self):
+    #     self.core.create_tag_handle('NORMAL', 3)
+    #     normal = np.zeros((len(self.core.all_faces), 3)).astype('float')
+    #     index = 0
+    #     for face in self.core.all_faces:
+    #         verts = self.core.mb.get_connectivity(face)
+    #         coords = np.array([self.core.mb.get_coords([vert]) for vert in verts])
+    #         vec1 = coords[1] - coords[0]
+    #         vec2 = coords[2] - coords[0]
+    #         cross = np.cross(vec1,vec2)
+    #         normal[index] = cross/np.linalg.norm(cross)
+    #         index += 1
+    #     self.core.set_data("NORMAL", normal, range_el=self.core.all_faces)
+#@jit(parallel = True)
 
-@jit(parallel=True)
+@jit
+def normal_vec_2d(coords0,coords1):
+    vec = coords1 - coords0
+    norm = np.linalg.norm(vec, axis = 1)
+    norm = 1/norm
+    return np.array([vec[:,1], -vec[:,0], vec[:,2] ]).T * norm[:,np.newaxis]
+    # distance = (np.inner(vec, vec, axis = 0))
+
+
+@jit
+def normal_vec(coords0, coords1, coords2):
+    vec1 = coords1 - coords0
+    vec2 = coords2 - coords0
+    cross = np.cross(vec1,vec2)
+    norm = np.linalg.norm(cross, axis = 1)
+    norm = 1/norm
+    return  cross * norm[:,np.newaxis]
+    # a = cross * norm
+
+def point_distance(coords_1, coords_2):
+    dist_vector = coords_1 - coords_2
+    distance = sqrt(np.dot(dist_vector, dist_vector))
+    return distance
+
+#@jit(parallel=True)
+@jit
 def get_average(coords_list):
     N = len(coords_list)
     return sum(coords_list)*(1/N)

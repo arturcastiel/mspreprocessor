@@ -56,7 +56,7 @@ class MeshEntities(object):
 
         self.classify_element = GetItem(self._classify_element)
         self.center = GetItem(self._center)
-
+        self.normal = GetItem(self._normal)
         # initialize specific flag dic in accordance with type of the object create
         self.flag = {key: self.read(value[self.vID]) for key, value in core.flag_dic.items()
                      if value[self.vID].empty() is not True}
@@ -152,6 +152,46 @@ class MeshEntities(object):
         # edges_adj = self.adjacencies[range_vec[edges_elements]]
         # centers[edges_elements]  = 0.5* (self._coords(edges_adj[:,0]) + self._coords(edges_adj[:,1]))
 
+
+
+    def _normal(self,index):
+        range_vec = self.create_range_vec(index)
+        normal_vec = np.zeros(( np.shape(range_vec)[0],3 ))
+        if self.vID == 1:
+            all_adj = self.connectivities[range_vec]
+            return gtool.normal_vec_2d(self._coords(all_adj[:,0]),self._coords(all_adj[:,1]))
+
+            #edges_adj = self.connectivities[range_vec]
+            #centers  = 0.5* (self._coords(edges_adj[:,0]) + self._coords(edges_adj[:,1]))
+        elif self.vID == 2:
+            classified_elements = self.classify_element(range_vec)
+            all_adj = np.zeros(( np.shape(range_vec)[0],3 ))
+
+            tri_face = (classified_elements == types.MBTRI)
+            quad_face = (classified_elements == types.MBQUAD)
+            poly_face = (classified_elements == types.MBPOLYGON)
+            if tri_face.sum() != 0:
+                all_adj[tri_face] = self.connectivities[range_vec[tri_face]]
+            if quad_face.sum() != 0:
+                all_adj[quad_face] = self.connectivities[range_vec[quad_face]][:,0:3]
+            if poly_face.sum() != 0:
+                all_adj[poly_face] = self.connectivities[range_vec[poly_face]][:,0:3]
+            return  gtool.normal_vec(self._coords(all_adj[:,0]),self._coords(all_adj[:,1]),self._coords(all_adj[:,2]))
+
+
+
+
+
+            #
+            # if tri_face.sum() != 0:
+            #     normal_vec[tri_face] = gtool.get_average([self._coords(tri_faces_adj[:,col]) for col in range(tri_faces_adj.shape[1])])
+            # if quad_face.sum() != 0:
+            #     quad_faces_adj = self.connectivities[range_vec[quad_face]]
+            #     centers[quad_face] = gtool.get_average([self._coords(quad_faces_adj[:,col]) for col in range(quad_faces_adj.shape[1])])
+            # if poly_face.sum() != 0:
+            #     poly_faces_adj = self.connectivities[range_vec[poly_face]]
+            #     centers[poly_face] = gtool.get_average([self._coords(poly_faces_adj[:,col]) for col in range(poly_faces_adj.shape[1])])
+            return normal_vec
 
 
     def _connectivities(self,index):
