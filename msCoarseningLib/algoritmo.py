@@ -29,27 +29,34 @@ def scheme1(centerCoord, num_of_vol, rx,ry,rz ,nx = 3, ny = 3, nz =3 ):
     #        nx, ny, nz
     # msh -> objeto da clase meshUtil
     #centerCoord = msh.readData("CENTER")
-    # nx = int(nx)
-    # ny = int(ny)
-    # nz = int(nz)
+    nx = int(nx)
+    ny = int(ny)
+    nz = int(nz)
+    if (rz[1] == 0)  &  (rz[0] == 0):
+        nz = 1
+        rz = (-1,1)
+
     box = np.array([0, (rx[1] - rx[0])/nx, 0,(ry[1] - ry[0]) /ny, 0,(rz[1] - rz[0])/(nz+0)]).reshape(3,2)
     cent_coord_El1 = box.sum(axis =1)/2
     tag = np.zeros(num_of_vol).astype("int")
     coarseCenters = np.zeros((nx*ny*nz,3))
     index = 0
+    init_coords = np.array([rx[0],ry[0],rz[0]])
     for x in range(nx):
         for y in range(ny):
             for z in range(nz):
                 inc = np.multiply(box[:,1], np.array([x,y,z]))
+
                 #cent = cent_coord_El1 + inc
                 coarseCenters[index] = cent_coord_El1 + inc
+                # pdb.set_trace()
+
                 #inc = np.array([(nx) * x, (ny) * y, (nz) * z])
-                boxMin = box[:,0] + inc
-                boxMax = box[:,1] + inc
+                boxMin = box[:,0] + inc + init_coords
+                boxMax = box[:,1] + inc + init_coords
                 point = checkinBox(centerCoord,x=(boxMin[0], boxMax[0]), y=(boxMin[1], boxMax[1]) , z=(boxMin[2], boxMax[2]))
                 tag[point] = index
                 index += 1
-    pdb.set_trace()
     return tagAdjust(tag,coarseCenters)
 
 
@@ -70,6 +77,7 @@ def scheme2(centerCoord, num_of_vol, rx,ry,rz ,nx = 3, ny = 3, nz =3 ):
     tag = np.zeros(num_of_vol).astype("int")
     coarseCenters = np.zeros((nx*ny*nz,3))
     index = 0
+
     for x in range(nx):
         for y in range(ny):
             for z in range(nz):
@@ -82,7 +90,7 @@ def scheme2(centerCoord, num_of_vol, rx,ry,rz ,nx = 3, ny = 3, nz =3 ):
                 point = checkinBox(centerCoord,x=(boxMin[0], boxMax[0]), y=(boxMin[1], boxMax[1]) , z=(boxMin[2], boxMax[2]))
                 tag[point] = index
                 index += 1
-    return tagAdjust(tag,coarseCenters)
+    #return tagAdjust(tag,coarseCenters)
 
 
 def scheme3(centerCoord, num_of_vol, rx,ry,rz ,nx = 3, ny = 3, nz =3 ):

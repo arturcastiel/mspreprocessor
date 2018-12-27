@@ -25,7 +25,7 @@ from numba import jit
     #     self.core.set_data("NORMAL", normal, range_el=self.core.all_faces)
 #@jit(parallel = True)
 
-@jit
+@jit(parallel = True)
 def normal_vec_2d(coords0,coords1):
     vec = coords1 - coords0
     norm = np.linalg.norm(vec, axis = 1)
@@ -34,10 +34,30 @@ def normal_vec_2d(coords0,coords1):
     # distance = (np.inner(vec, vec, axis = 0))
 
 
+# @jit(nopython=True)
+# def cross_numba(vec1,vec2):
+#     vec1 = double(vec1)
+#     vec2 = double(vec2)
+#     result = np.zeros((vec1.shape[0],3))
+#     result[:,0] = vec1[:,1]*vec2[:,2] - vec1[:,2]*vec2[:,1]
+#     result[:,1] = vec1[:,2]*vec2[:,0] - vec1[:,0]*vec2[:,2]
+#     result[:,2] = vec1[:,0]*vec2[:,1] - vec1[:,1]*vec2[:,0]
+#     return result
+# @jit
+# def cross_numba(vec1, vec2):
+#     """ Calculate the cross product of two 3d vectors. """
+#     result = np.zeros((vec1.shape[0],3)
+#     # [a1, a2, a3] = double(vec1[0]), double(vec1[1]), double(vec1[2])
+#     # [b1, b2, b3] = double(vec2[0]), double(vec2[1]), double(vec2[2])
+#     # result[0] = a2 * b3 - a3 * b2
+#     # result[1] = a3 * b1 - a1 * b3
+#     # result[2] = a1 * b2 - a2 * b1
+# return result
 @jit
 def normal_vec(coords0, coords1, coords2):
     vec1 = coords1 - coords0
     vec2 = coords2 - coords0
+    #cross = cross_numba(vec1,vec2)
     cross = np.cross(vec1,vec2)
     norm = np.linalg.norm(cross, axis = 1)
     norm = 1/norm

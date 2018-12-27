@@ -3,6 +3,7 @@ import numpy as np
 from meshHandle.multiscaleMesh import FineScaleMeshMS as msh
 import time
 import pdb
+import geoUtil.geoTools as gtool
 
 from math import pi, sqrt
 from pymoab import core, types, rng, topo_util
@@ -16,11 +17,11 @@ from pymoab import core, types, rng, topo_util
 
 
 start = time. time()
-M = msh("semi.msh", dim = 3)
+M = msh("malha03.msh", dim = 2)
 vec = np.arange(len(M.alma)).astype(int)
 # M.core.print()
 end = time. time()
-print("Execution time for a 3d mesh with {0} elements: {1} seconds".format(len(M.faces), end-start))
+print("Execution time for a {2}d mesh with {0} elements: {1} seconds".format(len(M), end-start, M.dim ))
 
 
 start = time. time()
@@ -35,10 +36,10 @@ end = time. time()
 print("Printing Routine Time: {}".format(end-start))
 
 
-start = time. time()
-M.edges.normal[:]
-end = time. time()
-print("Printing Routine Time: {}".format(end-start))
+# start = time. time()
+# M.faces.normal[:]
+# end = time. time()
+# print("Printing Routine Time: {}".format(end-start))
 
 
 # vec2 = np.array([vec,vec,vec]).T
