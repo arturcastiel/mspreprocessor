@@ -11,11 +11,13 @@ class CoreMoab:
         self.root_set = self.mb.get_root_set()
         self.mtu = topo_util.MeshTopoUtil(self.mb)
         self.mb.load_file(mesh_file)
+        self.level = 0
         self.all_volumes = self.mb.get_entities_by_dimension(0, 3)
         self.all_nodes = self.mb.get_entities_by_dimension(0, 0)
         self.mtu.construct_aentities(self.all_nodes)
         self.all_faces = self.mb.get_entities_by_dimension(0, 2)
         self.all_edges = self.mb.get_entities_by_dimension(0, 1)
+
         self.handleDic = {}
         [self.boundary_nodes, self.boundary_edges, self.boundary_faces, self.boundary_volumes] = self.skinner_operation()
 
@@ -26,15 +28,15 @@ class CoreMoab:
 
         self.init_id()
         self.check_integrity()
-        self.create_id_visualization()
+        # self.create_id_visualization()
         # self.flag_dic = {}
         [self.flag_list, self.flag_dic] = self.read_flags()
 
-        self.create_flag_visualization()
+        # self.create_flag_visualization()
 
         # swtich on/off
         self.parallel_meshset = self.create_parallel_meshset()
-        self.create_parallel_visualization()
+        # self.create_parallel_visualization()
 
     def init_id(self):
         # delete previous IDs
@@ -136,14 +138,6 @@ class CoreMoab:
                 partition_volumes.append(list_entity)
         return partition_volumes
 
-    def create_parallel_visualization(self):
-        k = 0
-        for sets in self.parallel_meshset:
-            for dim in sets:
-                if len(dim) != 0:
-                    self.set_data("PARALLEL", k * np.ones(len(dim)).astype(int), range_el=dim)
-            k += 1
-
     def read_flags(self):
         physical_tag = self.mb.tag_get_handle("MATERIAL_SET")
         physical_sets = self.mb.get_entities_by_type_and_tag(
@@ -159,62 +153,6 @@ class CoreMoab:
                            self.mb.get_entities_by_dimension(set, 2), self.mb.get_entities_by_dimension(set, 3)]
             flag_dic[bc_flag] = list_entity
         return np.sort(flag_list), flag_dic
-
-    def create_flag_visualization(self):
-        self.create_tag_handle("FLAGS", 1, data_text="int")
-        self.create_tag_handle("MATERIAL", 1, data_text="int")
-        for k in self.flag_dic:
-            sets = self.flag_dic[k]
-            for dim in sets:
-                if len(dim) != 0:
-                    if k > 100:
-                        self.set_data("FLAGS", k * np.ones(len(dim)).astype(int), range_el=dim)
-                    else:
-                        self.set_data("MATERIAL", k * np.ones(len(dim)).astype(int), range_el=dim)
-
-    def create_flag_visualization_alternative(self):
-        self.create_tag_handle("FLAGS-NODES", 1, data_text="int")
-        self.create_tag_handle("FLAGS-EDGES", 1, data_text="int")
-        self.create_tag_handle("FLAGS-FACES", 1, data_text="int")
-        self.create_tag_handle("FLAGS-VOUMES", 1, data_text="int")
-        for k in self.flag_dic:
-            sets = self.flag_dic[k]
-            for dim, ndim in zip(sets,range(4)):
-
-                if len(dim) != 0:
-                    print([k, ndim])
-                    if k > 100:
-                        if ndim == 0:
-                            # print([dim, k])
-                            self.set_data("FLAGS-NODES", k * np.ones(len(dim)).astype(int), range_el=dim)
-                        elif ndim == 1:
-                            # print([dim, k])
-                            self.set_data("FLAGS-EDGES", k * np.ones(len(dim)).astype(int), range_el=dim)
-                        elif ndim ==2:
-                            # print([dim, k])
-                            self.set_data("FLAGS-FACES", k * np.ones(len(dim)).astype(int), range_el=dim)
-                        elif ndim == 3:
-                            # print([dim, k])
-                            self.set_data("FLAGS-VOLUMES", k * np.ones(len(dim)).astype(int), range_el=dim)
-                    # else:
-                    #     # self.set_data("MATERIAL", k * np.ones(len(dim)).astype(int), range_el=dim)
-                    #     pass
-
-    def create_id_visualization(self):
-        self.create_tag_handle("ID-NODES", 1, data_text="int")
-        self.create_tag_handle("ID-EDGES", 1, data_text="int")
-        self.create_tag_handle("ID-FACES", 1, data_text="int")
-        self.create_tag_handle("ID-VOLUMES", 1, data_text="int")
-
-        data_node = self.read_data("GLOBAL_ID", range_el=self.all_nodes)
-        data_edges = self.read_data("GLOBAL_ID", range_el=self.all_edges)
-        data_faces = self.read_data("GLOBAL_ID", range_el=self.all_faces)
-        data_volumes = self.read_data("GLOBAL_ID", range_el=self.all_volumes)
-
-        self.set_data("ID-NODES", data_node, range_el=self.all_nodes)
-        self.set_data("ID-EDGES", data_edges, range_el=self.all_edges)
-        self.set_data("ID-FACES", data_faces, range_el=self.all_faces)
-        self.set_data("ID-VOLUMES", data_volumes, range_el=self.all_volumes)
 
     def access_meshset(self, handle):
         # returns the entities contained inside a give meshset handle
@@ -287,21 +225,21 @@ class CoreMoab:
             range_el = self.range_index(index_vec, range_el)
         handle_tag = self.handleDic[name_tag]
         self.mb.tag_set_data(handle_tag, range_el, data)
-
-    def init_tag(self, name_tag, dtype="int", entity_type=4):
-        # initialize a tag
-        # zeros nodes, edges, faces and volumes
-        # by default it zeros all geometric entities
-        if dtype == "int":
-            var_type = int
-        elif dtype == "float":
-            var_type = float
-        elif dtype == "bool":
-            var_type = bool
-        el = [[self.all_nodes], [self.all_edges], [self.all_faces], [self.all_volumes],
-              [self.all_nodes, self.all_edges, self.all_faces, self.all_volumes]]
-        range_temp = self.range_merge(*el[entity_type])
-        self.set_data(name_tag,data = np.zeros(len(range_temp)).astype(var_type),range_el = range_temp)
+    #
+    # def init_tag(self, name_tag, dtype="int", entity_type=4):
+    #     # initialize a tag
+    #     # zeros nodes, edges, faces and volumes
+    #     # by default it zeros all geometric entities
+    #     if dtype == "int":
+    #         var_type = int
+    #     elif dtype == "float":
+    #         var_type = float
+    #     elif dtype == "bool":
+    #         var_type = bool
+    #     el = [[self.all_nodes], [self.all_edges], [self.all_faces], [self.all_volumes],
+    #           [self.all_nodes, self.all_edges, self.all_faces, self.all_volumes]]
+    #     range_temp = self.range_merge(*el[entity_type])
+    #     self.set_data(name_tag,data = np.zeros(len(range_temp)).astype(var_type),range_el = range_temp)
 
     def check_range_by_dimm(self, handle):
         # INPUT: handle or range
