@@ -25,7 +25,7 @@ class CoreMoab:
         self.internal_edges = rng.subtract(self.all_edges, self.boundary_edges)
         self.internal_faces = rng.subtract(self.all_faces, self.boundary_faces)
         self.internal_volumes = rng.subtract(self.all_volumes, self.boundary_volumes)
-
+        self.id_name = "GLOBAL_ID"
         self.init_id()
         self.check_integrity()
         # self.create_id_visualization()
@@ -43,17 +43,20 @@ class CoreMoab:
         # Gmesh standard counts from 1
         # GLOBAL_ID_tag = self.mb.tag_get_handle(
         #    "Global_ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, False)
-        global_tag = self.mb.tag_get_handle(
-            "GLOBAL_ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, False)
-        self.handleDic["GLOBAL_ID"] = global_tag
+        # global_tag = self.mb.tag_get_handle(
+        #     name, 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, False)
+        # self.handleDic[name] = global_tag
+
+        self.create_tag_handle(self.id_name, data_size = 1, data_text = "int", data_density = "sparse")
+
         # create volume ids
-        self.set_data("GLOBAL_ID", np.arange(len(self.all_volumes)))
+        self.set_data(self.id_name, np.arange(len(self.all_volumes)))
         # create face ids
-        self.set_data("GLOBAL_ID", np.arange(len(self.all_faces)), range_el=self.all_faces)
+        self.set_data(self.id_name, np.arange(len(self.all_faces)), range_el=self.all_faces)
         # create edges ids
-        self.set_data("GLOBAL_ID", np.arange(len(self.all_edges)), range_el=self.all_edges)
+        self.set_data(self.id_name, np.arange(len(self.all_edges)), range_el=self.all_edges)
         # create nodes ids
-        self.set_data("GLOBAL_ID", np.arange(len(self.all_nodes)), range_el=self.all_nodes)
+        self.set_data(self.id_name, np.arange(len(self.all_nodes)), range_el=self.all_nodes)
 
     def skinner_operation(self):
         skin = sk.Skinner(self.mb)

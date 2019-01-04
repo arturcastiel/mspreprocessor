@@ -7,6 +7,8 @@ import msCoarseningLib.algoritmo
 #from msCoarseningLib.configManager import readConfig
 from . meshComponents import MoabVariable, MeshEntities
 from . mscorePymoab import MsCoreMoab
+from . mscorePymoab import MsCoreMoab2
+
 
 
 import numpy as np
@@ -19,7 +21,8 @@ class FineScaleMeshMS(FineScaleMesh):
     def __init__(self,mesh_file, dim=3):
         super().__init__(mesh_file,dim)
         self.partition = self.init_partition()
-        self.a = MsCoreMoab(self.core, self.partition[:] == 5)
+        # self.a = MsCoreMoab(self.core, self.partition[:] == 5)
+        self.b = MsCoreMoab2(self.core, self.partition[:] == 5)
 
 
     def init_partition(self):
