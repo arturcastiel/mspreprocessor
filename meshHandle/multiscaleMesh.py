@@ -34,7 +34,10 @@ class FineScaleMeshMS(FineScaleMesh):
         self.partition = self.init_partition()
         # self.a = MsCoreMoab(self.core, self.partition[:] == 5)
 
-        self.coarse_volumes = CoarseVolume(self.core, self.dim, self.partition[:] == 5)
+        self.coarse_volumes = [CoarseVolume(self.core, self.dim, self.partition[:] == i) for i in range(self.partition[:].max())]
+        # self.coarse_volumes = CoarseVolume(self.core, self.dim, self.partition[:] == 5)
+
+
         #self.b = MsCoreMoab(self.core, self.partition[:] == 5)
 
 
