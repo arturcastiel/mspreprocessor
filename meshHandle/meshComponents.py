@@ -24,7 +24,12 @@ class MeshEntities(object):
         self.num = {"nodes": 0, "node": 0, "edges": 1, "edge": 1, "faces": 2, "face": 2, "volumes": 3, "volume": 3,
                     0: 0, 1: 1, 2: 2, 3: 3}
         string = {0: "nodes", 1: "edges", 2: "faces", 3: "volumes"}
+        if core.level == 0:
+            self.id_name = "GLOBAL_ID"
+        else:
+            self.id_name = "LOCAL_ID_L" + str(core.level)
         entity_num = self.num[entity_type]
+
         if entity_num == 0:
             self.elements_handle = core.all_nodes
             self.internal_elements = core.internal_nodes
@@ -46,7 +51,7 @@ class MeshEntities(object):
             self.boundary_elements = core.boundary_volumes
             self.vID = 3
         self.entity_type = string[entity_num]
-        self.tag_handle = core.handleDic["GLOBAL_ID"]
+        self.tag_handle = core.handleDic[self.id_name]
         if self.vID == 0:
             self.adjacencies = GetItem(self._adjacencies_for_nodes)
             self.coords =  GetItem(self._coords)
@@ -410,4 +415,5 @@ class MoabVariable(object):
             range_el = self.elements_handle
         return self.mb.tag_get_data(self.tag_handle, range_el)
 
-        
+    def protect(self):
+        self.__setitem__ = None

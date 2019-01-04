@@ -13,13 +13,10 @@ class FineScaleMesh:
     def __init__(self,mesh_file, dim=3):
         self.dim = dim
         self.core = CoreMoab(mesh_file, dim)
+        self.init_entities()
+
 
         self.alma = MoabVariable(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="alma")
-        self.nodes = MeshEntities(self.core, entity_type = "node")
-        self.edges = MeshEntities(self.core, entity_type="edges")
-        self.faces = MeshEntities(self.core, entity_type = "faces")
-        if dim == 3:
-            self.volumes = MeshEntities(self.core, entity_type = "volumes")
         self.ama = MoabVariable(self.core,data_size=1,var_type= "faces",  data_format="float", name_tag="ama",
                                 entity_index= self.faces.boundary, data_density="dense")
         self.arma = MoabVariable(self.core,data_size=3,var_type= "edges",  data_format="float", name_tag="arma",
@@ -32,6 +29,12 @@ class FineScaleMesh:
         # self.init_volume()
         # self.init_normal()
         self.macro_dim()
+    def init_entities(self):
+        self.nodes = MeshEntities(self.core, entity_type = "node")
+        self.edges = MeshEntities(self.core, entity_type="edges")
+        self.faces = MeshEntities(self.core, entity_type = "faces")
+        if self.dim == 3:
+            self.volumes = MeshEntities(self.core, entity_type = "volumes")
 
     def __len__(self):
         if self.dim == 3:
