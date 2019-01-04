@@ -30,11 +30,12 @@ class FineScaleMeshMS(FineScaleMesh):
     def __init__(self,mesh_file, dim=3):
         super().__init__(mesh_file,dim)
 
+
         self.partition = self.init_partition()
         # self.a = MsCoreMoab(self.core, self.partition[:] == 5)
 
         self.coarse_volumes = CoarseVolume(self.core, self.dim, self.partition[:] == 5)
-        self.b = MsCoreMoab(self.core, self.partition[:] == 5)
+        #self.b = MsCoreMoab(self.core, self.partition[:] == 5)
 
 
     def init_partition(self):

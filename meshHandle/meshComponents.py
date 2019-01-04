@@ -52,6 +52,7 @@ class MeshEntities(object):
             self.vID = 3
         self.entity_type = string[entity_num]
         self.tag_handle = core.handleDic[self.id_name]
+        self.global_handle = core.handleDic['GLOBAL_ID']
         if self.vID == 0:
             self.adjacencies = GetItem(self._adjacencies_for_nodes)
             self.coords =  GetItem(self._coords)
@@ -60,6 +61,7 @@ class MeshEntities(object):
             self.connectivities = GetItem(self._connectivities)
         self.classify_element = GetItem(self._classify_element)
         self.center = GetItem(self._center)
+        self.global_id = GetItem(self._global_id)
         if (self.vID == 1) & (core.dimension == 2):
             self.normal = GetItem(self._normal)
         elif (self.vID == 2) & (core.dimension == 3):
@@ -84,6 +86,12 @@ class MeshEntities(object):
         range_vec = self.create_range_vec(index)
         element_handle = self.range_index(range_vec, True)
         return np.reshape(self.mb.get_coords(element_handle),(-1,3))
+
+    def _global_id(self, index):
+        range_vec = self.create_range_vec(index)
+        element_handle = self.range_index(range_vec)
+        return self.mb.tag_get_data(self.global_handle, element_handle).ravel()
+
 
     def _adjacencies_for_nodes(self, index):
         return self.create_range_vec(index)
@@ -143,23 +151,6 @@ class MeshEntities(object):
                 hex_volumes_adj = self.connectivities[range_vec[hex_volume]]
                 centers[hex_volume] = gtool.get_average([self._coords(hex_volumes_adj[:,col]) for col in range(hex_volumes_adj.shape[1])])
         return centers
-            #
-            # volumetype = (type_list == types.MBTET) | (type_list == types.MBPYRAMID) | (type_list == types.MBPRISM) | \
-            #              (type_list == types.MBKNIFE) | (type_list == types.MBHEX) | (type_list == types.MBPOLYHEDRON)
-            # meshsettype = type_list == types.MBENTITYSET
-
-
-        #
-        # classified_elements = self.classify_element(range_vec)
-        #
-        # node_elements = (classified_elements == types.MBVERTEX)
-        # edges_elements = (classified_elements == types.MBEDGE)
-        #
-        # centers[node_elements] = self._coords(range_vec[node_elements])
-        # edges_adj = self.adjacencies[range_vec[edges_elements]]
-        # centers[edges_elements]  = 0.5* (self._coords(edges_adj[:,0]) + self._coords(edges_adj[:,1]))
-
-
 
     def _normal(self,index):
         range_vec = self.create_range_vec(index)
@@ -184,21 +175,6 @@ class MeshEntities(object):
             if poly_face.sum() != 0:
                 all_adj[poly_face] = self.connectivities[range_vec[poly_face]][:,0:3]
             return  gtool.normal_vec(self._coords(all_adj[:,0]),self._coords(all_adj[:,1]),self._coords(all_adj[:,2]))
-
-
-
-
-
-            #
-            # if tri_face.sum() != 0:
-            #     normal_vec[tri_face] = gtool.get_average([self._coords(tri_faces_adj[:,col]) for col in range(tri_faces_adj.shape[1])])
-            # if quad_face.sum() != 0:
-            #     quad_faces_adj = self.connectivities[range_vec[quad_face]]
-            #     centers[quad_face] = gtool.get_average([self._coords(quad_faces_adj[:,col]) for col in range(quad_faces_adj.shape[1])])
-            # if poly_face.sum() != 0:
-            #     poly_faces_adj = self.connectivities[range_vec[poly_face]]
-            #     centers[poly_face] = gtool.get_average([self._coords(poly_faces_adj[:,col]) for col in range(poly_faces_adj.shape[1])])
-            return normal_vec
 
 
     def _connectivities(self,index):
