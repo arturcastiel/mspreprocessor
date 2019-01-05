@@ -92,7 +92,6 @@ class MeshEntities(object):
         element_handle = self.range_index(range_vec)
         return self.mb.tag_get_data(self.global_handle, element_handle).ravel()
 
-
     def _adjacencies_for_nodes(self, index):
         return self.create_range_vec(index)
 

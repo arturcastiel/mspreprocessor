@@ -9,6 +9,8 @@ class CoreMoab:
         self.dimension = dim
         self.mb = core.Core()
         self.root_set = self.mb.get_root_set()
+        self.father_root_set = self.root_set
+
         self.mtu = topo_util.MeshTopoUtil(self.mb)
         self.mb.load_file(mesh_file)
         self.level = 0
@@ -176,6 +178,7 @@ class CoreMoab:
         # pdb.set_trace()
         all_adj = np.array([np.array(self.mb.get_adjacencies(el_handle, dim-1)) for dim, el_handle in zip(vecdim,handle)])
         #unique_adj = np.unique(np.ma.concatenate(all_adj)).astype("uint64")
+        # print(handle,all_adj)
         unique_adj = np.unique(np.concatenate(all_adj)).astype("uint64")
         return rng.Range(unique_adj)
 
