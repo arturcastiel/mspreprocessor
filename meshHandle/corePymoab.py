@@ -8,7 +8,14 @@ class CoreMoab:
     def __init__(self, mesh_file, dim=3):
         self.dimension = dim
         self.mb = core.Core()
-        self.root_set = self.mb.get_root_set()
+        # self.root_set = self.mb.get_root_set()
+
+        self.root_set = self.mb.create_meshset() #types.MESHSET_TRACK_OWNER)
+        all_entities = self.mb.get_entities_by_handle(self.mb.get_root_set())
+        self.mb.add_entities(self.root_set, all_entities)
+
+
+
         self.father_root_set = self.root_set
 
         self.mtu = topo_util.MeshTopoUtil(self.mb)

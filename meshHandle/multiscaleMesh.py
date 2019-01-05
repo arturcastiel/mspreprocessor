@@ -19,7 +19,7 @@ print('Initializing Finescale Mesh for Multiscale Methods')
 class CoarseVolume(FineScaleMesh):
     def __init__(self, father_core, dim, i, coarse_vec):
         self.dim = dim
-        print("Level {0} - Volume {1}".format(father_core.level,i))
+        print("Level {0} - Volume {1}".format(father_core.level + 1,i))
         self.core = MsCoreMoab(father_core, coarse_vec)
         # print(self.core.level)
 
@@ -39,9 +39,9 @@ class FineScaleMeshMS(FineScaleMesh):
         # self.a = MsCoreMoab(self.core, self.partition[:] == 5)
         #
         # m =  np.unique(self.partition[:])
-        self.coarse_volumes = [CoarseVolume(self.core, self.dim, i, self.partition[:] == i) for i in range(11)]
+        #self.coarse_volumes = [CoarseVolume(self.core, self.dim, i, self.partition[:] == i) for i in range(11)]
 
-        #self.coarse_volumes = [CoarseVolume(self.core, self.dim, i, self.partition[:] == i) for i in range(self.partition[:].max())]
+        self.coarse_volumes = [CoarseVolume(self.core, self.dim, i, self.partition[:] == i) for i in range(self.partition[:].max())]
         # # self.coarse_volumes = CoarseVolume(self.core, self.dim, self.partition[:] == 5)
 
 
