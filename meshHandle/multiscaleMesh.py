@@ -23,18 +23,11 @@ class FineScaleMeshMS(FineScaleMesh):
         super().__init__(mesh_file,dim)
 
 
-        self.partition = self.init_partition_parallel()
-        # self.partition
-        # self.a = MsCoreMoab(self.core, self.partition[:] == 5)
-        #
-        # m =  np.unique(self.partition[:])
-        #self.coarse_volumes = [CoarseVolume(self.core, self.dim, i, self.partition[:] == i) for i in range(11)]
+        self.partition = self.init_partition()
+
 
         self.coarse_volumes = [CoarseVolume(self.core, self.dim, i, self.partition[:] == i) for i in range(self.partition[:].max())]
-        # # self.coarse_volumes = CoarseVolume(self.core, self.dim, self.partition[:] == 5)
 
-
-        #self.b = MsCoreMoab(self.core, self.partition[:] == 5)
 
     def init_variables(self):
         self.alma = MoabVariable(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="alma")
