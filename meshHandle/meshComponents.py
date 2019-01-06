@@ -69,7 +69,7 @@ class MeshEntities(object):
         # initialize specific flag dic in accordance with type of the object create
         self.flag = {key: self.read(value[self.vID]) for key, value in core.flag_dic.items()
                      if value[self.vID].empty() is not True}
-        print("Mesh Entity type {0} successfully initialized".format(entity_type))
+        # print("Mesh Entity type {0} successfully initialized".format(entity_type))
 
 
     def bridge_adjacencies(self, index, interface, target):
@@ -389,6 +389,3 @@ class MoabVariable(object):
         else:
             range_el = self.elements_handle
         return self.mb.tag_get_data(self.tag_handle, range_el)
-
-    def protect(self):
-        self.__setitem__ = None

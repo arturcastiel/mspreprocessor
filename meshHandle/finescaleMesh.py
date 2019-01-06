@@ -14,21 +14,18 @@ class FineScaleMesh:
         self.dim = dim
         self.core = CoreMoab(mesh_file, dim)
         self.init_entities()
-
-
-        self.alma = MoabVariable(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="alma")
-        self.ama = MoabVariable(self.core,data_size=1,var_type= "faces",  data_format="float", name_tag="ama",
-                                entity_index= self.faces.boundary, data_density="dense")
-        self.arma = MoabVariable(self.core,data_size=3,var_type= "edges",  data_format="float", name_tag="arma",
-                                 data_density="sparse")
-        self.alga = MoabVariable(self.core,data_size=3,var_type= "volumes",  data_format="float", name_tag="Centrinhos",
-                                 data_density="sparse")
-        #pdb.set_trace()
-
-        # self.init_center()
-        # self.init_volume()
-        # self.init_normal()
+        self.init_variables()
         self.macro_dim()
+
+    def init_variables(self):
+        pass
+        # self.alma = MoabVariable(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="alma")
+        # self.ama = MoabVariable(self.core,data_size=1,var_type= "faces",  data_format="float", name_tag="ama",
+        #                         entity_index= self.faces.boundary, data_density="dense")
+        # self.arma = MoabVariable(self.core,data_size=3,var_type= "edges",  data_format="float", name_tag="arma",
+        #                          data_density="sparse")
+        # self.alga = MoabVariable(self.core,data_size=3,var_type= "volumes",  data_format="float", name_tag="Centrinhos",
+        #                          data_density="sparse")
     def init_entities(self):
         self.nodes = MeshEntities(self.core, entity_type = "node")
         self.edges = MeshEntities(self.core, entity_type="edges")

@@ -16,26 +16,15 @@ from pymoab import core, types, rng, topo_util
 
 
 print('Initializing Finescale Mesh for Multiscale Methods')
-class CoarseVolume(FineScaleMesh):
-    def __init__(self, father_core, dim, i, coarse_vec):
-        self.dim = dim
-        print("Level {0} - Volume {1}".format(father_core.level + 1,i))
-        self.core = MsCoreMoab(father_core, coarse_vec)
-        # print(self.core.level)
 
-        self.init_entities()
-
-
-        #print('successfully')
-    pass
 
 class FineScaleMeshMS(FineScaleMesh):
     def __init__(self,mesh_file, dim=3):
         super().__init__(mesh_file,dim)
 
 
-        self.partition = self.init_partition()
-        self.partition.protect()
+        self.partition = self.init_partition_parallel()
+        # self.partition
         # self.a = MsCoreMoab(self.core, self.partition[:] == 5)
         #
         # m =  np.unique(self.partition[:])
@@ -46,6 +35,13 @@ class FineScaleMeshMS(FineScaleMesh):
 
 
         #self.b = MsCoreMoab(self.core, self.partition[:] == 5)
+
+    def init_variables(self):
+        self.alma = MoabVariable(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="alma")
+        self.ama = MoabVariable(self.core,data_size=1,var_type= "faces",  data_format="float", name_tag="ama",
+                                entity_index= self.faces.boundary, data_density="dense")
+        self.arma = MoabVariable(self.core,data_size=3,var_type= "edges",  data_format="float", name_tag="arma",
+                                 data_density="sparse")
 
 
     def init_partition(self):
@@ -76,7 +72,37 @@ class FineScaleMeshMS(FineScaleMesh):
                            len(self), self.rx, self.ry, self.rz,*used_attributes)
             return partition
 
+
+    def init_partition_parallel(self):
+        if self.dim == 3:
+            partition = MoabVariable(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="Parallel",
+                                         data_density="sparse")
+
+            # partition[:]
+            # [partition[:],coarse_center]  = getattr(msCoarseningLib.algoritmo, name_function)(self.volumes.center[:],
+            #            len(self), self.rx, self.ry, self.rz,*used_attributes)
+        elif self.dim == 2:
+            partition = MoabVariable(self.core,data_size=1,var_type= "faces",  data_format="int", name_tag="Parallel",
+                                         data_density="sparse")
+        return partition
+
     def read_config(self, config_input="msCoarse.ini"):
         config_file = cp.ConfigParser()
         config_file.read(config_input)
         return config_file
+
+
+class CoarseVolume(FineScaleMeshMS):
+    def __init__(self, father_core, dim, i, coarse_vec):
+        self.dim = dim
+        print("Level {0} - Volume {1}".format(father_core.level + 1,i))
+        self.core = MsCoreMoab(father_core, coarse_vec)
+        # print(self.core.level)
+
+        self.init_entities()
+        self.init_variables()
+        self.init_coarse_variables()
+        self.macro_dim()
+
+    def init_coarse_variables(self):
+        self.lama = MoabVariable(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="lama")

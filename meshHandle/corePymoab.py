@@ -8,11 +8,11 @@ class CoreMoab:
     def __init__(self, mesh_file, dim=3):
         self.dimension = dim
         self.mb = core.Core()
-        # self.root_set = self.mb.get_root_set()
+        self.root_set = self.mb.get_root_set()
 
-        self.root_set = self.mb.create_meshset() #types.MESHSET_TRACK_OWNER)
-        all_entities = self.mb.get_entities_by_handle(self.mb.get_root_set())
-        self.mb.add_entities(self.root_set, all_entities)
+        # self.root_set = self.mb.create_meshset() #types.MESHSET_TRACK_OWNER)
+        # all_entities = self.mb.get_entities_by_handle(self.mb.get_root_set())
+        # self.mb.add_entities(self.root_set, all_entities)
 
 
 
@@ -45,7 +45,7 @@ class CoreMoab:
 
         # swtich on/off
         self.parallel_meshset = self.create_parallel_meshset()
-        # self.create_parallel_visualization()
+        self.create_parallel_tag()
 
     def init_id(self):
         # delete previous IDs
@@ -95,19 +95,6 @@ class CoreMoab:
         print("Skinning Operation Successful")
         return [nodes_on_skin_handles, edges_on_skin_handles, faces_on_skin_handles, volumes_on_skin_handles]
 
-        #
-        # self.create_tag_handle("SKINPOINT",1, "int", data_density="sparse")
-        # self.create_tag_handle("SKINEDGES", 1, "int", data_density="sparse")
-        # self.create_tag_handle("SKINFACES", 1, "int", data_density="sparse")
-        # self.create_tag_handle("SKINVOLUMES", 1, "int", data_density="sparse")
-        #
-        # self.set_data("SKINPOINT", 200 * np.ones(len(nodes_on_skin_handles)).astype(int),range_el=nodes_on_skin_handles)
-        # self.set_data("SKINEDGES", 300 * np.ones(len(edges_on_skin_handles)).astype(int),range_el=edges_on_skin_handles)
-        # self.set_data("SKINFACES", 400 * np.ones(len(faces_on_skin_handles)).astype(int),range_el=faces_on_skin_handles)
-        # self.set_data("SKINVOLUMES", 800 * np.ones(len(volumes_on_skin_handles)).astype(int),range_el=volumes_on_skin_handles)
-        #
-        # return [nodes_on_skin_handles, edges_on_skin_handles, faces_on_skin_handles, volumes_on_skin_handles]
-
     def check_integrity(self):
         # check if the mesh contains
         check_list = [len(self.all_nodes), len(self.all_edges), len(self.all_faces), len(self.all_volumes)]
@@ -140,15 +127,24 @@ class CoreMoab:
             parallel_sets = self.mb.get_entities_by_type_and_tag(
                 0, types.MBENTITYSET, np.array(
                 (parallel_tag,)), np.array((None,)))
-            self.create_tag_handle("PARALLEL", data_size=1, data_text="int")
+            self.create_tag_handle("Parallel", data_size=1, data_text="int")
             # partition_volumes = []
             for set_el in parallel_sets:
                 num_tag = self.read_data("PARALLEL_PARTITION", range_el=set_el)[0, 0]
+                # self.set_data("Parallel", np.ones(len(set_el))*num_tag,  range_el=set_el)
                 list_entity = [self.mb.get_entities_by_dimension(set_el, 0), self.mb.get_entities_by_dimension(set_el, 1),
                                self.mb.get_entities_by_dimension(set_el, 2), self.mb.get_entities_by_dimension(set_el, 3)]
                 # print([num_tag, list_entity])
                 partition_volumes.append(list_entity)
         return partition_volumes
+
+    def create_parallel_tag(self):
+        k = 0
+        for sets in self.parallel_meshset:
+            for dim in sets:
+                if len(dim) != 0:
+                    self.set_data("Parallel", k * np.ones(len(dim)).astype(int), range_el=dim)
+            k += 1
 
     def read_flags(self):
         physical_tag = self.mb.tag_get_handle("MATERIAL_SET")
