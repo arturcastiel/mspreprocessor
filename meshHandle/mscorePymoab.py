@@ -43,7 +43,7 @@ class MsCoreMoab(CoreMoab):
         self.flag_dic = {key:[rng.intersect(all_entities,el) for el in value] for (key, value) in father_core.flag_dic.items()}
 
     def skinner_operation(self):
-        skin = sk.Skinner(self.mb)
+        #skin = sk.Skinner(self.mb)
         # print("Entering skinner test")
 
         if self.dimension == 3:
@@ -84,18 +84,6 @@ class MsCoreMoab(CoreMoab):
 
         # print("Skinning Operation Successful")
         return [nodes_on_skin_handles, edges_on_skin_handles, faces_on_skin_handles, volumes_on_skin_handles]
-
-    # def pseudo_skinner(self):
-    #
-    #     if self.dimension == 3:
-    #
-    #         pass
-    #     pass
-    #
-    # def find_skin(self):
-    #
-    #
-    #     pass
 
     def bridge_adjacencies(self, handle, dim):
         # lacks support for indexing with multiple numbers
