@@ -8,6 +8,7 @@ import msCoarseningLib.algoritmo
 from . meshComponents import MoabVariable, MeshEntities
 from . mscorePymoab import MsCoreMoab
 
+from . meshComponentsMS import MultiscaleMeshEntities
 
 
 import numpy as np
@@ -21,13 +22,9 @@ print('Initializing Finescale Mesh for Multiscale Methods')
 class FineScaleMeshMS(FineScaleMesh):
     def __init__(self,mesh_file, dim=3):
         super().__init__(mesh_file,dim)
-
-
         self.partition = self.init_partition()
-
-
         self.coarse_volumes = [CoarseVolume(self.core, self.dim, i, self.partition[:] == i) for i in range(self.partition[:].max())]
-
+        self.general = MultiscaleMeshEntities(self.coarse_volumes)
 
     def init_variables(self):
         self.alma = MoabVariable(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="alma")
