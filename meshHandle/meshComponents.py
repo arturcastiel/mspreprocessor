@@ -27,7 +27,7 @@ class MeshEntities(object):
         if core.level == 0:
             self.id_name = "GLOBAL_ID"
         else:
-            self.id_name = "LOCAL_ID_L" + str(core.level)
+            self.id_name = "LOCAL_ID_L" + str(core.level) + "-" + str(core.coarse_num)
         entity_num = self.num[entity_type]
         if entity_num == 0:
             self.elements_handle = core.all_nodes

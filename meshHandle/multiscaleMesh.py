@@ -8,7 +8,7 @@ import msCoarseningLib.algoritmo
 from . meshComponents import MoabVariable, MeshEntities
 from . mscorePymoab import MsCoreMoab
 
-from . meshComponentsMS import MultiscaleMeshEntities
+from . meshComponentsMS import MultiscaleMeshEntities ,MoabVariableMS
 
 
 import numpy as np
@@ -85,8 +85,12 @@ class FineScaleMeshMS(FineScaleMesh):
 class CoarseVolume(FineScaleMeshMS):
     def __init__(self, father_core, dim, i, coarse_vec):
         self.dim = dim
-        print("Level {0} - Volume {1}".format(father_core.level + 1,i))
-        self.core = MsCoreMoab(father_core, coarse_vec)
+        self.level = father_core.level + 1
+        self.coarse_num = i
+
+        print("Level {0} - Volume {1}".format(self.level,self.coarse_num))
+
+        self.core = MsCoreMoab(father_core, i, coarse_vec)
         # print(self.core.level)
 
         self.init_entities()
@@ -95,4 +99,4 @@ class CoarseVolume(FineScaleMeshMS):
         self.macro_dim()
 
     def init_coarse_variables(self):
-        self.lama = MoabVariable(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="lama")
+        self.lama = MoabVariableMS(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="lama", level=self.level, coarse_num=self.coarse_num)

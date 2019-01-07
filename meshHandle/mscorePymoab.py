@@ -8,10 +8,11 @@ import pdb
 
 
 class MsCoreMoab(CoreMoab):
-    def __init__(self, father_core, coarse_vec):
+    def __init__(self, father_core, num, coarse_vec):
         self.dimension = father_core.dimension
         self.mb = father_core.mb
         self.level = father_core.level + 1
+        self.coarse_num = num
         self.father_root_set = father_core.root_set
         self.root_set = self.mb.create_meshset(types.MESHSET_TRACK_OWNER) #types.MESHSET_TRACK_OWNER)
         self.mtu = father_core.mtu
@@ -36,7 +37,7 @@ class MsCoreMoab(CoreMoab):
         self.internal_edges = rng.subtract(self.all_edges, self.boundary_edges)
         self.internal_faces = rng.subtract(self.all_faces, self.boundary_faces)
         self.internal_volumes = rng.subtract(self.all_volumes, self.boundary_volumes)
-        self.id_name = "LOCAL_ID_L" + str(self.level)
+        self.id_name = "LOCAL_ID_L" + str(self.level) + "-" + str(self.coarse_num)
         self.init_id()
         # all_entities = self.mb.get_entities_by_handle(self.root_set)
         # print(all_entities)
