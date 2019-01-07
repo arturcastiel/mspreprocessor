@@ -24,7 +24,7 @@ class FineScaleMeshMS(FineScaleMesh):
         super().__init__(mesh_file,dim)
         self.partition = self.init_partition()
         self.coarse_volumes = [CoarseVolume(self.core, self.dim, i, self.partition[:] == i) for i in range(self.partition[:].max())]
-        self.general = MultiscaleMeshEntities(self.coarse_volumes)
+        self.general = MultiscaleMeshEntities(self.core,self.coarse_volumes)
 
     def init_variables(self):
         self.alma = MoabVariable(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="alma")

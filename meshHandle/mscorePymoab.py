@@ -26,11 +26,6 @@ class MsCoreMoab(CoreMoab):
         self.mb.add_entities(self.root_set, self.all_edges)
         self.mb.add_entities(self.root_set, self.all_nodes)
 
-        # print(self.father_root_set, self.root_set)
-        #print(self.root_set)
-
-        # self.mb.add_child_meshset(self.father_root_set, self.root_set)
-
         all_entities = self.mb.get_entities_by_handle(self.root_set)
         [self.boundary_nodes, self.boundary_edges, self.boundary_faces, self.boundary_volumes] = self.skinner_operation()
         self.internal_nodes = rng.subtract(self.all_nodes, self.boundary_nodes)
