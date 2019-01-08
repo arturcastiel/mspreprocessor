@@ -34,7 +34,18 @@ class MeshEntitiesMS(MeshEntities):
         elif self.vID == 3:
             self.coarse_neighbors_dic = {key[1]:value for key, value in general.volumes_neighbors.items() if key[0] == i}
         self.coarse_neighbors =  np.array([key for key, value in self.coarse_neighbors_dic.items() if not value.empty()])
+        self.all_coarse_neighbors_range= rng.Range()
+        for el in self.coarse_neighbors_dic.values():
+            self.all_coarse_neighbors_range=s = rng.unite(self.all_coarse_neighbors_range,el)
+        self.elements_in_coarse_neighborhood = GetItem(self._elements_in_coarse_neighborhood)
 
+    def _elements_in_coarse_neighborhood(self,x):
+        handle = self.coarse_neighbors_dic[x]
+        return self.read(handle)
+
+    @property
+    def all_elements_in_coarse_neighborhood(self):
+            return self.read(self.all_coarse_neighbors_range)
 
 
 class MoabVariableMS(MoabVariable):
