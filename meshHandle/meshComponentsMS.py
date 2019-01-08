@@ -23,7 +23,7 @@ class MeshEntitiesMS(MeshEntities):
         super().__init__(core, entity_type)
         # print(core)
         # print(entity_type)
-    def __call__(self,i, general):
+    def enhance(self,i, general):
         self.coarse_neighbors_dic = {}
         if self.vID == 0:
             self.coarse_neighbors_dic = { key[1] :value for key, value in general.nodes_neighbors.items() if key[0] == i}

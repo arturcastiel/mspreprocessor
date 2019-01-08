@@ -27,7 +27,7 @@ class FineScaleMesh:
         # self.alga = MoabVariable(self.core,data_size=3,var_type= "volumes",  data_format="float", name_tag="Centrinhos",
         #                          data_density="sparse")
     def init_entities(self):
-        self.nodes = MeshEntities(self.core, entity_type = "node")
+        self.nodes = MeshEntities(self.core, entity_type = "nodes")
         self.edges = MeshEntities(self.core, entity_type="edges")
         self.faces = MeshEntities(self.core, entity_type = "faces")
         if self.dim == 3:

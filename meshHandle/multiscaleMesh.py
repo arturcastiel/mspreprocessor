@@ -23,13 +23,10 @@ class FineScaleMeshMS(FineScaleMesh):
     def __init__(self,mesh_file, dim=3):
         super().__init__(mesh_file,dim)
         self.partition = self.init_partition()
-        self.coarse_volumes = [CoarseVolume(self.core, self.dim, i, self.partition[:] == i) for i in range(self.partition[:].max())]
+        self.coarse_volumes = [CoarseVolume(self.core, self.dim, i, self.partition[:] == i) for i in range(self.partition[:].max()+1 )]
         self.general = MultiscaleMeshEntities(self.core,self.coarse_volumes)
         for i,el in zip(range(len(self.coarse_volumes)),self.coarse_volumes):
             el(i,self.general)
-
-
-
 
     def init_entities(self):
         self.nodes = MeshEntitiesMS(self.core, entity_type = "node")
@@ -37,8 +34,6 @@ class FineScaleMeshMS(FineScaleMesh):
         self.faces = MeshEntitiesMS(self.core, entity_type = "faces")
         if self.dim == 3:
             self.volumes = MeshEntitiesMS(self.core, entity_type = "volumes")
-
-
 
 
     def init_variables(self):
@@ -103,9 +98,7 @@ class CoarseVolume(FineScaleMeshMS):
         self.coarse_num = i
 
         print("Level {0} - Volume {1}".format(self.level,self.coarse_num))
-
         self.core = MsCoreMoab(father_core, i, coarse_vec)
-        # print(self.core.level)
 
         self.init_entities()
         self.init_variables()
@@ -116,11 +109,11 @@ class CoarseVolume(FineScaleMeshMS):
         pass
 
     def __call__(self,i,general):
-        self.nodes(i,general)
-        self.edges(i,general)
-        self.faces(i,general)
+        self.nodes.enhance(i,general)
+        self.edges.enhance(i,general)
+        self.faces.enhance(i,general)
         if self.dim == 3:
-            self.volumes(i,general)
+            self.volumes.enhance(i,general)
 
         pass
 

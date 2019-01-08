@@ -17,10 +17,16 @@ class MsCoreMoab(CoreMoab):
         self.root_set = self.mb.create_meshset(types.MESHSET_TRACK_OWNER) #types.MESHSET_TRACK_OWNER)
         self.mtu = father_core.mtu
         self.handleDic = father_core.handleDic
-        self.all_volumes = self.range_index(coarse_vec, range_handle=father_core.all_volumes)
-        self.all_faces = self.access_handle(self.all_volumes)
+        if self.dimension == 3:
+            self.all_volumes = self.range_index(coarse_vec, range_handle=father_core.all_volumes)
+            self.all_faces = self.access_handle(self.all_volumes)
+        elif self.dimension == 2:
+            self.all_volumes = rng.Range()
+            self.all_faces = self.range_index(coarse_vec, range_handle=father_core.all_faces)
         self.all_edges = self.access_handle(self.all_faces)
-        self.all_nodes = rng.Range(self.mb.get_connectivity(self.all_volumes))
+
+        self.all_nodes = rng.Range(self.mb.get_connectivity(self.all_faces))
+
         self.mb.add_entities(self.root_set, self.all_volumes)
         self.mb.add_entities(self.root_set, self.all_faces)
         self.mb.add_entities(self.root_set, self.all_edges)
