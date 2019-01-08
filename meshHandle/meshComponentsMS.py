@@ -19,18 +19,22 @@ class GetItem(object):
 
 class MeshEntitiesMS(MeshEntities):
     def __init__(self, core, entity_type):
-        pdb.set_trace()
-        super().__init__(self, core, entity_type)
-        print(core)
-        print(entity_type)
+        # pdb.set_trace()
+        super().__init__(core, entity_type)
+        # print(core)
+        # print(entity_type)
+    def __call__(self,i, general):
+        self.coarse_neighbors_dic = {}
+        if self.vID == 0:
+            self.coarse_neighbors_dic = { key[1] :value for key, value in general.nodes_neighbors.items() if key[0] == i}
+        elif self.vID == 1:
+            self.coarse_neighbors_dic = {key[1]:value for key, value in general.edges_neighbors.items() if key[0] == i}
+        elif self.vID == 2:
+            self.coarse_neighbors_dic = {key[1]:value for key, value in general.faces_neighbors.items() if key[0] == i}
+        elif self.vID == 3:
+            self.coarse_neighbors_dic = {key[1]:value for key, value in general.volumes_neighbors.items() if key[0] == i}
+        self.coarse_neighbors =  np.array([key for key, value in self.coarse_neighbors_dic.items() if not value.empty()])
 
-
-    def init_entities(self):
-        self.nodes = MeshEntitiesMS(self.core, entity_type = "node")
-        self.edges = MeshEntitiesMS(self.core, entity_type = "edges")
-        self.faces = MeshEntitiesMS(self.core, entity_type = "faces")
-        if self.dim == 3:
-            self.volumes = MeshEntitiesMS(self.core, entity_type = "volumes")
 
 
 class MoabVariableMS(MoabVariable):

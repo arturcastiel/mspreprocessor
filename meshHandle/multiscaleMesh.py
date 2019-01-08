@@ -26,6 +26,20 @@ class FineScaleMeshMS(FineScaleMesh):
         self.coarse_volumes = [CoarseVolume(self.core, self.dim, i, self.partition[:] == i) for i in range(self.partition[:].max())]
         self.general = MultiscaleMeshEntities(self.core,self.coarse_volumes)
 
+        for i,el in zip(range(len(self.coarse_volumes)),self.coarse_volumes):
+            el(i,self.general)
+
+
+    def init_entities(self):
+        self.nodes = MeshEntitiesMS(self.core, entity_type = "node")
+        self.edges = MeshEntitiesMS(self.core, entity_type = "edges")
+        self.faces = MeshEntitiesMS(self.core, entity_type = "faces")
+        if self.dim == 3:
+            self.volumes = MeshEntitiesMS(self.core, entity_type = "volumes")
+
+
+
+
     def init_variables(self):
         self.alma = MoabVariable(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="alma")
         self.ama = MoabVariable(self.core,data_size=1,var_type= "faces",  data_format="float", name_tag="ama",
@@ -97,6 +111,16 @@ class CoarseVolume(FineScaleMeshMS):
         self.init_variables()
         self.init_coarse_variables()
         self.macro_dim()
+
+
+    def __call__(self,i,general):
+        self.nodes(i,general)
+        self.edges(i,general)
+        self.faces(i,general)
+        if self.dim == 3:
+            self.volumes(i,general)
+
+        pass
 
     def init_coarse_variables(self):
         self.lama = MoabVariableMS(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="lama", level=self.level, coarse_num=self.coarse_num)
