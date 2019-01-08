@@ -8,7 +8,7 @@ import msCoarseningLib.algoritmo
 from . meshComponents import MoabVariable, MeshEntities
 from . mscorePymoab import MsCoreMoab
 
-from . meshComponentsMS import MultiscaleMeshEntities ,MoabVariableMS
+from . meshComponentsMS import MultiscaleMeshEntities ,MoabVariableMS,  MeshEntitiesMS
 
 
 import numpy as np
