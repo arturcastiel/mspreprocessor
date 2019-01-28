@@ -17,7 +17,7 @@ from pymoab import core, types, rng, topo_util
 
 
 start = time. time()
-M = msh("curve.msh", dim = 3)
+M = msh("malha03.msh", dim = 2)
 vec = np.arange(len(M.alma)).astype(int)
 # M.core.print()
 end = time. time()
