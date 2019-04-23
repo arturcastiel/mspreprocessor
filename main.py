@@ -18,11 +18,9 @@ from pymoab import core, types, rng, topo_util
 # %autoreload 2
 
 
-start = time.time()
-#M2 = msh2("serraboqueirao.msh", dim = 2)
-
-M = msh("semi2.msh", dim=3)
-#vec = np.arange(len(M.alma)).astype(int)
+start = time. time()
+M = msh("malha03.msh", dim = 2)
+vec = np.arange(len(M.alma)).astype(int)
 # M.core.print()
 end = time. time()
 print("Execution time for a {2}d mesh with {0} elements: {1} seconds".format(len(M), end-start, M.dim ))
