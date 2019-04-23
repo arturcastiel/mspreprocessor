@@ -3,5 +3,6 @@ RUN apt-get update
 RUN apt-get install nano
 RUN pip install --upgrade pip
 RUN pip install ipython
-
+RUN pip install scipy
+RUN pip install xlsxwriter
 WORKDIR $HOME

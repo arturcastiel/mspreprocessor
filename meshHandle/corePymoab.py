@@ -296,7 +296,7 @@ class CoreMoab:
                 range_merged.merge(arg)
         return range_merged
 
-    def print(self, text=None):
+    def print(self, text=None, extension=".vtk"):
         m1 = self.mb.create_meshset()
         self.mb.add_entities(m1, self.all_nodes)
         m2 = self.mb.create_meshset()
@@ -309,7 +309,7 @@ class CoreMoab:
         self.mb.add_entities(m4, self.all_edges)
         if text is None:
             text = "output"
-        extension = ".vtk"
+        #extension = ".vtk"
         text1 = text + "-nodes" + extension
         text2 = text + "-face" + extension
         text3 = text + "-volume" + extension

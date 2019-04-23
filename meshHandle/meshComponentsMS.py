@@ -96,9 +96,12 @@ class MultiscaleMeshEntities(object):
     def __init__(self,father_core,coarse_list):
         self.mb = father_core.mb
         self.num_coarse = len(coarse_list)
+        print("finding coarse_neighbors")
         self.find_coarse_neighbours(coarse_list)
+        print("finding coarse_neighbors completed")
         self.num = {"nodes": 0, "node": 0, "edges": 1, "edge": 1, "faces": 2, "face": 2, "volumes": 3, "volume": 3,
                              0: 0, 1: 1, 2: 2, 3: 3}
+
         # self.local_tag = coarse_list[0].core.handleDic[coarse_list[0].core.id_name]
         self.local_tag =  [el.core.handleDic["LOCAL_ID_L" + str(el.core.level) + "-" + str(el.core.coarse_num)] for el in coarse_list]
         self.global_tag = father_core.handleDic["GLOBAL_ID"]
@@ -196,6 +199,9 @@ class MultiscaleMeshEntities(object):
     def create_range_vec(self, index):
         range_vec = None
         if isinstance(index, int):
+            range_vec = np.array([index]).astype("uint")
+        elif isinstance(index, np.integer):
+            pdb.set_trace()
             range_vec = np.array([index]).astype("uint")
         elif isinstance(index, np.ndarray):
             if index.dtype == "bool":

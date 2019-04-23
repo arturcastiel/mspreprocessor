@@ -35,13 +35,17 @@ class FineScaleMeshMS(FineScaleMesh):
         if self.dim == 3:
             self.volumes = MeshEntitiesMS(self.core, entity_type = "volumes")
 
-
     def init_variables(self):
-        self.alma = MoabVariableMS(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="alma")
-        self.ama = MoabVariableMS(self.core,data_size=1,var_type= "faces",  data_format="float", name_tag="ama",data_density="sparse")
-        self.arma = MoabVariableMS(self.core,data_size=3,var_type= "edges",  data_format="float", name_tag="arma",
-                                 data_density="sparse")
+        self.no1 = MoabVariableMS(self.core,data_size=1,var_type= "nodes",  data_format="float", name_tag="Flow")
+        self.edges1 = MoabVariableMS(self.core,data_size=1,var_type= "edges",  data_format="float", name_tag="Pressure")
+        #self.flow = MoabVariableMS(self.core,data_size=3,var_type= "faces",  data_format="float", name_tag="Flow")
+        self.faces1 = MoabVariable(self.core,data_size= 1 ,var_type= "faces",  data_format="float", name_tag="Permeability")
+        #self.pressure1 = MoabVariable(self.core,data_size= 3 ,var_type= "faces",  data_format="float", name_tag="Permeability")
 
+        # self.flow = MoabVariableMS(self.core,data_size=3,var_type= "edges",  data_format="float", name_tag="Flow")
+        # self.pressure = MoabVariableMS(self.core,data_size=1,var_type= "faces",  data_format="float", name_tag="Pressure")
+        # #self.flow = MoabVariableMS(self.core,data_size=3,var_type= "faces",  data_format="float", name_tag="Flow")
+        # self.perm = MoabVariable(self.core,data_size= 3 ,var_type= "faces",  data_format="float", name_tag="Permeability")
 
     def init_partition(self):
         config = self.read_config()
@@ -118,4 +122,6 @@ class CoarseVolume(FineScaleMeshMS):
         pass
 
     def init_coarse_variables(self):
-        self.lama = MoabVariableMS(self.core,data_size=1,var_type= "faces",  data_format="int", name_tag="lama", level=self.level, coarse_num=self.coarse_num)
+        self.pressure = MoabVariableMS(self.core,data_size=1,var_type= "volumes",  data_format="float", name_tag="pressure", level=self.level, coarse_num=self.coarse_num)
+        self.flow = MoabVariableMS(self.core,data_size=3,var_type= "faces",  data_format="float", name_tag="flow", level=self.level, coarse_num=self.coarse_num)
+        #self.lama = MoabVariableMS(self.core,data_size=1,var_type= "faces",  data_format="int", name_tag="lama", level=self.level, coarse_num=self.coarse_num)

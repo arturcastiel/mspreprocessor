@@ -39,11 +39,14 @@ Line Loop(6) = {2, 12, -7, -11};
 Plane Surface(6) = {6};
 Surface Loop(1) = {1, 5, 4, 2, 3, 6};
 Volume(1) = {1};
-
-
 Recombine Surface {1, 3, 6, 5, 2, 4};
 
-//Transfinite Curve {6, 5, 1, 11, 12, 2, 3, 4, 10, 7, 8, 9} =51 Using Progression 1;
+
+Transfinite  {6, 5} =51 Using Progression 1;
+Transfinite  {6, 5} =51 Using Progression 1;
+Transfinite  {6, 5} =51 Using Progression 1;
+
+
 //Transfinite Surface {1};
 //Transfinite Surface {2};
 //Transfinite Surface {3};

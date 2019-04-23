@@ -18,8 +18,9 @@ class FineScaleMesh:
         self.macro_dim()
 
     def init_variables(self):
-        pass
-        # self.alma = MoabVariable(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="alma")
+        print("init variable")
+        self.perm = MoabVariable(self.core,data_size=1,var_type= "faces",  data_format="float", name_tag="Permeability")
+        #self.alma = MoabVariable(self.core,data_size=1,var_type= "volumes",  data_format="int", name_tag="alma")
         # self.ama = MoabVariable(self.core,data_size=1,var_type= "faces",  data_format="float", name_tag="ama",
         #                         entity_index= self.faces.boundary, data_density="dense")
         # self.arma = MoabVariable(self.core,data_size=3,var_type= "edges",  data_format="float", name_tag="arma",
